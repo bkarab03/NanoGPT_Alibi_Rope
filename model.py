@@ -106,6 +106,7 @@ class CausalSelfAttention(nn.Module):
         self.n_head = config.n_head
         self.n_embd = config.n_embd
         self.dropout = config.dropout
+        self.pos_enc_type = config.pos_enc_type
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
         if not self.flash:
@@ -113,10 +114,11 @@ class CausalSelfAttention(nn.Module):
             # causal mask to ensure that attention is only applied to the left in the input sequence
             self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
                                         .view(1, 1, config.block_size, config.block_size))
-        # Get slopes for each head
-        self.register_buffer('slopes', get_slopes(config.n_head))
 
-        self.alibi_biases = None
+        if self.pos_enc_type == "alibi":
+            # Get slopes for each head
+            self.register_buffer('slopes', get_slopes(config.n_head))
+            self.alibi_biases = None
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
@@ -134,14 +136,12 @@ class CausalSelfAttention(nn.Module):
         else:
             # Compute attention scores
             att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
-
-            # Create AliBi biases if it's not cached
-            if self.alibi_biases is None or self.alibi_biases.shape[1] < T:
-                # `mask` is self.bias[:,:,:T,:T]
-                self.alibi_biases = get_alibi_biases(att.size(-1), self.bias[:, :, :T, :T][:, :, 0, 0])
-
-            # Add AliBi biases to attention scores.
-            att += self.alibi_biases[:T, :T, None, :]
+            if self.pos_enc_type == "alibi":
+                # Create AliBi biases if it's not cached
+                if self.alibi_biases is None or self.alibi_biases.shape[1] < T:
+                    self.alibi_biases = get_alibi_biases(att.size(-1), self.bias[:, :, :T, :T][:, :, 0, 0])
+                # Add AliBi biases to attention scores.
+                att += self.alibi_biases[:T, :T, None, :]
 
             # Apply mask
             att = att.masked_fill(self.bias[:, :, :T, :T] == 0, float('-inf'))
@@ -197,6 +197,7 @@ class GPTConfig:
     n_embd: int = 768
     dropout: float = 0.0
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
+    pos_enc_type: str = "orijinal"  # New field for positional encoding type. Default can be any value you choose.
 
 class GPT(nn.Module):
 
@@ -205,6 +206,7 @@ class GPT(nn.Module):
         assert config.vocab_size is not None
         assert config.block_size is not None
         self.config = config
+        self.pos_enc_type = config.pos_enc_type
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
@@ -258,8 +260,12 @@ class GPT(nn.Module):
 
         # forward the GPT model itself
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
-        pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
-        x = self.transformer.drop(tok_emb + pos_emb)
+        if self.pos_enc_type == "alibi":
+            x = self.transformer.drop(tok_emb)
+        else:
+            pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
+            x = self.transformer.drop(tok_emb + pos_emb)
+
         for block in self.transformer.h:
             x = block(x)
         x = self.transformer.ln_f(x)

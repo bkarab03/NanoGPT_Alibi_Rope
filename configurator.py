@@ -39,6 +39,9 @@ for arg in sys.argv[1:]:
                 # if that goes wrong, just use the string
                 attempt = val
             # ensure the types match ok
+            print(f"---: {key} = {attempt}")
+            print(f"---: {type(globals()[key])} --")
+
             assert type(attempt) == type(globals()[key])
             # cross fingers
             print(f"Overriding: {key} = {attempt}")
