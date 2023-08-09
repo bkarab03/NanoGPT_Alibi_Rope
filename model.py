@@ -47,6 +47,8 @@ class CausalSelfAttention(nn.Module):
         self.dropout = config.dropout
         self.pos_enc_type = config.pos_enc_type
         self.rope = None
+        self.alibi_biases = None
+
 
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
         # self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
@@ -56,11 +58,6 @@ class CausalSelfAttention(nn.Module):
             # causal mask to ensure that attention is only applied to the left in the input sequence
             self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
                                         .view(1, 1, config.block_size, config.block_size))
-
-        if self.pos_enc_type == "alibi":
-            # Get slopes for each head
-            self.register_buffer('slopes', get_slopes(config.n_head))
-            self.alibi_biases = None
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
@@ -87,6 +84,7 @@ class CausalSelfAttention(nn.Module):
 
             # If using Alibi, create and add biases
             if self.pos_enc_type == "alibi":
+                self.register_buffer('slopes', get_slopes(self.n_head))
                 if self.alibi_biases is None or self.alibi_biases.shape[1] < T:
                     self.alibi_biases = get_alibi_biases(att.size(-1), self.bias[:, :, :T, :T][:, :, 0, 0])
                 att += self.alibi_biases[:T, :T, None, :]
@@ -157,7 +155,7 @@ class GPTConfig:
     n_embd: int = 768
     dropout: float = 0.0
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
-    pos_enc_type: str = "orijinal"  # New field for positional encoding type. Default can be any value you choose.
+    pos_enc_type: str = "orijinal"
 
 
 class GPT(nn.Module):
@@ -222,10 +220,8 @@ class GPT(nn.Module):
         # forward the GPT model itself
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
 
-        if self.pos_enc_type == "alibi":
-            x = self.transformer.drop(tok_emb) # Assuming Alibi is already handled elsewhere in the transformer
-        elif self.pos_enc_type == "rope":
-            # No need to add positional embeddings here if using RoPE; handled elsewhere
+        if self.pos_enc_type in ["alibi", "rope"]:
+            # No need to add positional embeddings here handled in attention
             x = self.transformer.drop(tok_emb)
         elif self.pos_enc_type == "sinusoidal":
             pos_emb = sinusoidal_positional_encoding(pos, self.config.n_embd, device) # Compute sinusoidal position embeddings
