@@ -9,6 +9,7 @@ https://github.com/huggingface/transformers/blob/main/src/transformers/models/gp
 
 import math
 import inspect
+import sys
 from dataclasses import dataclass
 
 import torch
@@ -107,8 +108,11 @@ class CausalSelfAttention(nn.Module):
         self.n_embd = config.n_embd
         self.dropout = config.dropout
         self.pos_enc_type = config.pos_enc_type
+        self.rope = None
+
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
-        self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
+        # self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
+        self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attentionFalse')
         if not self.flash:
             print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
             # causal mask to ensure that attention is only applied to the left in the input sequence
@@ -135,12 +139,26 @@ class CausalSelfAttention(nn.Module):
             y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=True)
         else:
             # Compute attention scores
+            # Apply RoPE to queries and keys if needed
+            if self.pos_enc_type == "rope":
+                self.rope = RotaryPositionalEmbeddings(d=C // self.n_head)
+                # Transpose and apply RoPE to q
+                q_transposed = q.permute(2, 0, 1, 3)
+                q_with_rope = self.rope(q_transposed)
+                q = q_with_rope.permute(1, 2, 0, 3)
+
+                # Transpose and apply RoPE to k
+                k_transposed = k.permute(2, 0, 1, 3)
+                k_with_rope = self.rope(k_transposed)
+                k = k_with_rope.permute(1, 2, 0, 3)
+
+            # Compute attention scores
             att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
+
+            # If using Alibi, create and add biases
             if self.pos_enc_type == "alibi":
-                # Create AliBi biases if it's not cached
                 if self.alibi_biases is None or self.alibi_biases.shape[1] < T:
                     self.alibi_biases = get_alibi_biases(att.size(-1), self.bias[:, :, :T, :T][:, :, 0, 0])
-                # Add AliBi biases to attention scores.
                 att += self.alibi_biases[:T, :T, None, :]
 
             # Apply mask
@@ -152,9 +170,9 @@ class CausalSelfAttention(nn.Module):
 
             # Multiply by values
             y = att @ v
-        y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
+        y = y.transpose(1, 2).contiguous().view(B, T, C) # Re-assemble all head outputs side by side
 
-        # output projection
+        # Output projection
         y = self.resid_dropout(self.c_proj(y))
         return y
 
@@ -200,8 +218,6 @@ class GPTConfig:
     pos_enc_type: str = "orijinal"  # New field for positional encoding type. Default can be any value you choose.
 
 
-
-
 class RotaryPositionalEmbeddings(nn.Module):
     def __init__(self, d: int, base: int = 10_000):
         super().__init__()
@@ -223,7 +239,12 @@ class RotaryPositionalEmbeddings(nn.Module):
 
     def _neg_half(self, x: torch.Tensor):
         d_2 = self.d // 2
-        return torch.cat([-x[:, d_2:], x[:, :d_2]], dim=-1)
+        # print("x shape:", x.shape)
+        # print("d_2:", d_2)
+        # print("-x[:, d_2:] shape:", (-x[:, d_2:]).shape)
+        # print("x[:, :d_2] shape:", x[:, :d_2].shape)
+        return torch.cat([-x[..., d_2:], x[..., :d_2]], dim=-1)
+
 
     def forward(self, x: torch.Tensor):
         self._build_cache(x)
@@ -240,8 +261,6 @@ class GPT(nn.Module):
         assert config.block_size is not None
         self.config = config
         self.pos_enc_type = config.pos_enc_type
-        if self.pos_enc_type == "rope":
-            self.rope = RotaryPositionalEmbeddings(d=config.n_embd)  # Assuming n_embd is the feature size
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
@@ -297,13 +316,11 @@ class GPT(nn.Module):
         # forward the GPT model itself
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
 
-
-
         if self.pos_enc_type == "alibi":
             x = self.transformer.drop(tok_emb)
         else:
-            if self.pos_enc_type == "rope":
-                x = self.rope(tok_emb)  # Apply RoPE to input embeddings
+            # if self.pos_enc_type == "rope":
+            #     x = self.rope(tok_emb)  # Apply RoPE to input embeddings
             pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
             x = self.transformer.drop(tok_emb + pos_emb)
 
