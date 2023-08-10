@@ -104,17 +104,6 @@ class CausalSelfAttention(nn.Module):
         y = self.resid_dropout(self.c_proj(y))
         return y
 
-    def apply_rotary_embeddings(self, k, q):
-        # Transpose and apply RoPE to q
-        q_transposed = q.permute(2, 0, 1, 3)
-        q_with_rope = self.rope(q_transposed)
-        q = q_with_rope.permute(1, 2, 0, 3)
-        # Transpose and apply RoPE to k
-        k_transposed = k.permute(2, 0, 1, 3)
-        k_with_rope = self.rope(k_transposed)
-        k = k_with_rope.permute(1, 2, 0, 3)
-        return k, q
-
 
 class MLP(nn.Module):
 
