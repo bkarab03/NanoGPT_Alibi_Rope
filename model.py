@@ -15,7 +15,8 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from embedding import get_slopes, get_alibi_biases, RotaryPositionalEmbeddings, sinusoidal_positional_encoding
+from attention.causalattention import CausalSelfAttention
+from embedding import sinusoidal_positional_encoding
 
 
 class LayerNorm(nn.Module):
@@ -28,81 +29,6 @@ class LayerNorm(nn.Module):
 
     def forward(self, input):
         return F.layer_norm(input, self.weight.shape, self.weight, self.bias, 1e-5)
-
-
-class CausalSelfAttention(nn.Module):
-
-    def __init__(self, config):
-        super().__init__()
-        assert config.n_embd % config.n_head == 0
-        # key, query, value projections for all heads, but in a batch
-        self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=config.bias)
-        # output projection
-        self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=config.bias)
-        # regularization
-        self.attn_dropout = nn.Dropout(config.dropout)
-        self.resid_dropout = nn.Dropout(config.dropout)
-        self.n_head = config.n_head
-        self.n_embd = config.n_embd
-        self.dropout = config.dropout
-        self.pos_enc_type = config.pos_enc_type
-        self.rope = None
-        self.alibi_biases = None
-
-
-        # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
-        # self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
-        self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attentionFalse')
-        if not self.flash:
-            print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
-            # causal mask to ensure that attention is only applied to the left in the input sequence
-            self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
-                                        .view(1, 1, config.block_size, config.block_size))
-
-    def forward(self, x):
-        B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
-
-        # calculate query, key, values for all heads in batch and move head forward to be the batch dim
-        q, k, v  = self.c_attn(x).split(self.n_embd, dim=2)
-        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-
-        # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
-        if self.flash:
-            # efficient attention using Flash Attention CUDA kernels
-            y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=True)
-        else:
-            # Compute attention scores
-            # Apply RoPE to queries and keys if needed
-            if self.pos_enc_type == "rope":
-                self.rope = RotaryPositionalEmbeddings(d=C // self.n_head)
-                k, q = self.apply_rotary_embeddings(k, q)
-
-            # Compute attention scores
-            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
-
-            # If using Alibi, create and add biases
-            if self.pos_enc_type == "alibi":
-                self.register_buffer('slopes', get_slopes(self.n_head))
-                if self.alibi_biases is None or self.alibi_biases.shape[1] < T:
-                    self.alibi_biases = get_alibi_biases(att.size(-1), self.bias[:, :, :T, :T][:, :, 0, 0])
-                att += self.alibi_biases[:T, :T, None, :]
-
-            # Apply mask
-            att = att.masked_fill(self.bias[:, :, :T, :T] == 0, float('-inf'))
-
-            # Apply softmax and dropout
-            att = F.softmax(att, dim=-1)
-            att = self.attn_dropout(att)
-
-            # Multiply by values
-            y = att @ v
-        y = y.transpose(1, 2).contiguous().view(B, T, C) # Re-assemble all head outputs side by side
-
-        # Output projection
-        y = self.resid_dropout(self.c_proj(y))
-        return y
 
 
 class MLP(nn.Module):
@@ -121,12 +47,21 @@ class MLP(nn.Module):
         x = self.dropout(x)
         return x
 
+def create_attention(config):
+    if config.attention_type == 'casual':
+        return CausalSelfAttention(config)
+    elif config.attention_type == 'Attention':
+        return "Attention(config)"
+    else:
+        raise ValueError(f"Unknown attention type: {config.attention_type}")
+
+
 class Block(nn.Module):
 
     def __init__(self, config):
         super().__init__()
         self.ln_1 = LayerNorm(config.n_embd, bias=config.bias)
-        self.attn = CausalSelfAttention(config)
+        self.attn = create_attention(config)
         self.ln_2 = LayerNorm(config.n_embd, bias=config.bias)
         self.mlp = MLP(config)
 
@@ -145,6 +80,7 @@ class GPTConfig:
     dropout: float = 0.0
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
     pos_enc_type: str = "orijinal"
+    attention_type: str = "casual"
 
 
 class GPT(nn.Module):
