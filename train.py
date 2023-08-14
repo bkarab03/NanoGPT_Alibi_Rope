@@ -27,7 +27,7 @@ import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
-from model import GPTConfig, GPT
+from Retnet import GPTConfig, Retnet
 
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
@@ -152,7 +152,8 @@ if init_from == 'scratch':
         print("defaulting to vocab_size of GPT-2 to 50304 (50257 rounded up for efficiency)")
     model_args['vocab_size'] = meta_vocab_size if meta_vocab_size is not None else 50304
     gptconf = GPTConfig(**model_args)
-    model = GPT(gptconf)
+    # model = GPT(gptconf)
+    model = Retnet(gptconf)
 elif init_from == 'resume':
     print(f"Resuming training from {out_dir}")
     # resume training from a checkpoint.
@@ -165,7 +166,7 @@ elif init_from == 'resume':
         model_args[k] = checkpoint_model_args[k]
     # create the model
     gptconf = GPTConfig(**model_args)
-    model = GPT(gptconf)
+    model = Retnet(gptconf)
     state_dict = checkpoint['model']
     # fix the keys of the state dictionary :(
     # honestly no idea how checkpoints sometimes get this prefix, have to debug more
@@ -180,7 +181,7 @@ elif init_from.startswith('gpt2'):
     print(f"Initializing from OpenAI GPT-2 weights: {init_from}")
     # initialize from OpenAI GPT-2 weights
     override_args = dict(dropout=dropout)
-    model = GPT.from_pretrained(init_from, override_args)
+    model = Retnet.from_pretrained(init_from, override_args)
     # read off the created config params, so we can store them into checkpoint correctly
     for k in ['n_layer', 'n_head', 'n_embd', 'block_size', 'bias', 'vocab_size']:
         model_args[k] = getattr(model.config, k)
@@ -258,33 +259,33 @@ while True:
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
-    # evaluate the loss on train/val sets and write checkpoints
-    if iter_num % eval_interval == 0 and master_process:
-        losses = estimate_loss()
-        print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-        if wandb_log:
-            wandb.log({
-                "iter": iter_num,
-                "train/loss": losses['train'],
-                "val/loss": losses['val'],
-                "lr": lr,
-                "mfu": running_mfu*100, # convert to percentage
-            })
-        if losses['val'] < best_val_loss or always_save_checkpoint:
-            best_val_loss = losses['val']
-            if iter_num > 0:
-                checkpoint = {
-                    'model': raw_model.state_dict(),
-                    'optimizer': optimizer.state_dict(),
-                    'model_args': model_args,
-                    'iter_num': iter_num,
-                    'best_val_loss': best_val_loss,
-                    'config': config,
-                }
-                print(f"saving checkpoint to {out_dir}")
-                torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
-    if iter_num == 0 and eval_only:
-        break
+    # # evaluate the loss on train/val sets and write checkpoints
+    # if iter_num % eval_interval == 0 and master_process:
+    #     losses = estimate_loss()
+    #     print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+    #     if wandb_log:
+    #         wandb.log({
+    #             "iter": iter_num,
+    #             "train/loss": losses['train'],
+    #             "val/loss": losses['val'],
+    #             "lr": lr,
+    #             "mfu": running_mfu*100, # convert to percentage
+    #         })
+    #     if losses['val'] < best_val_loss or always_save_checkpoint:
+    #         best_val_loss = losses['val']
+    #         if iter_num > 0:
+    #             checkpoint = {
+    #                 'model': raw_model.state_dict(),
+    #                 'optimizer': optimizer.state_dict(),
+    #                 'model_args': model_args,
+    #                 'iter_num': iter_num,
+    #                 'best_val_loss': best_val_loss,
+    #                 'config': config,
+    #             }
+    #             print(f"saving checkpoint to {out_dir}")
+    #             torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
+    # if iter_num == 0 and eval_only:
+    #     break
 
     # forward backward update, with optional gradient accumulation to simulate larger batch size
     # and using the GradScaler if data type is float16
