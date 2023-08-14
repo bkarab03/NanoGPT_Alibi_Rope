@@ -17,6 +17,7 @@ from torch.nn import functional as F
 
 from attention.attention import ATTENTION_REGISTRY
 from attention.causalattention import CausalSelfAttention
+from attention.retnet import GatedMultiScaleRetention
 from embedding import sinusoidal_positional_encoding
 
 
@@ -77,7 +78,7 @@ class GPTConfig:
     dropout: float = 0.0
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
     pos_enc_type: str = "orijinal"
-    attention_type: str = "causal"
+    attention_type: str = "GatedMultiScaleRetention"
 
 
 class GPT(nn.Module):
