@@ -6,6 +6,15 @@ from torch.nn import functional as F
 
 from embedding import RotaryPositionalEmbeddings, get_slopes, get_alibi_biases
 
+# Attention Registry and Registration Function
+ATTENTION_REGISTRY = {}
+
+def register_attention(name):
+  def register_attn_cls(cls):
+    ATTENTION_REGISTRY[name] = cls
+    return cls
+  return register_attn_cls
+
 
 class Attention(nn.Module):
 

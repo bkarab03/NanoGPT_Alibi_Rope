@@ -1921,3 +1921,11 @@ encoding alibi iter 5: loss 3.5226%
 encoding alibi iter 6: loss 3.4901%
 encoding alibi iter 7: loss 3.3803%
 encoding alibi iter 8: loss 3.3399%
+encoding alibi iter 0: loss 4.2060%
+encoding alibi iter 1: loss 4.2182%
+encoding alibi iter 2: loss 4.0675%
+encoding alibi iter 3: loss 3.8588%
+encoding alibi iter 4: loss 3.6772%
+encoding alibi iter 5: loss 3.5226%
+encoding alibi iter 6: loss 3.4901%
+encoding alibi iter 7: loss 3.3803%

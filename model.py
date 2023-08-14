@@ -15,6 +15,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
+from attention.attention import ATTENTION_REGISTRY
 from attention.causalattention import CausalSelfAttention
 from embedding import sinusoidal_positional_encoding
 
@@ -48,12 +49,8 @@ class MLP(nn.Module):
         return x
 
 def create_attention(config):
-    if config.attention_type == 'casual':
-        return CausalSelfAttention(config)
-    elif config.attention_type == 'Attention':
-        return "Attention(config)"
-    else:
-        raise ValueError(f"Unknown attention type: {config.attention_type}")
+  attn_cls = ATTENTION_REGISTRY[config.attention_type]
+  return attn_cls(config)
 
 
 class Block(nn.Module):
@@ -80,7 +77,7 @@ class GPTConfig:
     dropout: float = 0.0
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
     pos_enc_type: str = "orijinal"
-    attention_type: str = "casual"
+    attention_type: str = "causal"
 
 
 class GPT(nn.Module):

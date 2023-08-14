@@ -1,12 +1,12 @@
 import math
 
-from attention.attention import Attention
+from attention.attention import Attention, register_attention
 from embedding import RotaryPositionalEmbeddings, get_alibi_biases, get_slopes
 from torch.nn import functional as F
 import torch
 import torch.nn as nn
 
-
+@register_attention('causal')
 class CausalSelfAttention(Attention):
 
     def __init__(self, config):
