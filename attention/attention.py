@@ -54,7 +54,7 @@ class Attention(nn.Module):
         q = q.view(B, T, self.config.n_head, C // self.config.n_head).transpose(1, 2)
         v = v.view(B, T, self.config.n_head, C // self.config.n_head).transpose(1, 2)
 
-        return q, k, v, B, T, C, self.attention(q, k, v, B, T, C)
+        return q, k, v, B, T, C
 
     def get_qkv(self, x):
         return self.c_attn(x).split(self.config.n_embd, dim=2)

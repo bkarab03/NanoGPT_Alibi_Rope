@@ -13,9 +13,8 @@ class CausalSelfAttention(Attention):
         super().__init__(config)
         self.config = config
 
-
-    def attention(self, q, k, v, B, T, C):
-
+    def forward(self, x):
+        q, k, v, B, T, C = super().forward(x)
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         if self.flash:
             # efficient attention using Flash Attention CUDA kernels
@@ -49,9 +48,3 @@ class CausalSelfAttention(Attention):
         y = y.transpose(1, 2).contiguous().view(B, T, C) # Re-assemble all head outputs side by side
 
         return self.resid_dropout(self.c_proj(y))
-
-
-    def forward(self, x):
-        q, k, v, B, T, C, attention_output = super().forward(x)
-
-        return attention_output
