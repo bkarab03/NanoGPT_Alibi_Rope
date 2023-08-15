@@ -1,10 +1,11 @@
 import math
 
 from attention.attention import Attention, register_attention
-from embedding import RotaryPositionalEmbeddings, get_alibi_biases, get_slopes
+from embeddings.alibi import get_alibi_biases, get_slopes
+from embeddings.rotary_embeddings import RotaryPositionalEmbeddings
 from torch.nn import functional as F
 import torch
-import torch.nn as nn
+
 
 @register_attention('causal')
 class CausalSelfAttention(Attention):
@@ -31,10 +32,7 @@ class CausalSelfAttention(Attention):
 
             # If using Alibi, create and add biases
             if self.pos_enc_type == "alibi":
-                self.register_buffer('slopes', get_slopes(self.n_head))
-                if self.alibi_biases is None or self.alibi_biases.shape[1] < T:
-                    self.alibi_biases = get_alibi_biases(att.size(-1), self.bias[:, :, :T, :T][:, :, 0, 0])
-                att += self.alibi_biases[:T, :T, None, :]
+                att = self.apply_alibi_embeddings(T, att)
 
             # Apply mask
             att = att.masked_fill(self.bias[:, :, :T, :T] == 0, float('-inf'))
@@ -48,3 +46,10 @@ class CausalSelfAttention(Attention):
         y = y.transpose(1, 2).contiguous().view(B, T, C) # Re-assemble all head outputs side by side
 
         return self.resid_dropout(self.c_proj(y))
+
+    def apply_alibi_embeddings(self, T, att):
+        self.register_buffer('slopes', get_slopes(self.n_head))
+        if self.alibi_biases is None or self.alibi_biases.shape[1] < T:
+            self.alibi_biases = get_alibi_biases(att.size(-1), self.bias[:, :, :T, :T][:, :, 0, 0])
+        att += self.alibi_biases[:T, :T, None, :]
+        return att

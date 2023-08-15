@@ -16,9 +16,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 from attention.attention import ATTENTION_REGISTRY
-from attention.causalattention import CausalSelfAttention
-from attention.retnet import GatedMultiScaleRetention
-from embedding import sinusoidal_positional_encoding
+from embeddings.sinusoidal import sinusoidal_positional_encoding
 
 
 class LayerNorm(nn.Module):
@@ -141,18 +139,7 @@ class GPT(nn.Module):
         pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
 
         # forward the GPT model itself
-        tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
-
-        if self.pos_enc_type in ["alibi", "rope"]:
-            # No need to add positional embeddings here handled in attention
-            x = self.transformer.drop(tok_emb)
-        elif self.pos_enc_type == "sinusoidal":
-            pos_emb = sinusoidal_positional_encoding(pos, self.config.n_embd, device) # Compute sinusoidal position embeddings
-            x = self.transformer.drop(tok_emb + pos_emb)
-        else:
-            #Learned positional embeddings
-            pos_emb = self.transformer.wpe(pos) # Traditional position embeddings of shape (t, n_embd)
-            x = self.transformer.drop(tok_emb + pos_emb)
+        x = self._compute_embeddings(device, idx, pos)
 
         for block in self.transformer.h:
             x = block(x)
@@ -160,6 +147,10 @@ class GPT(nn.Module):
 
         if targets is not None:
             # if we are given some desired targets also calculate the loss
+            # # Check for invalid values in inputs and targets
+            # if torch.isnan(x).any() or torch.isinf(x).any():
+            #     print("Invalid values detected in inputs")
+
             logits = self.lm_head(x)
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
@@ -168,6 +159,21 @@ class GPT(nn.Module):
             loss = None
 
         return logits, loss
+
+    def _compute_embeddings(self, device, idx, pos):
+        tok_emb = self.transformer.wte(idx)  # token embeddings of shape (b, t, n_embd)
+        if self.pos_enc_type in ["alibi", "rope"]:
+            # No need to add positional embeddings here handled in attention
+            x = self.transformer.drop(tok_emb)
+        elif self.pos_enc_type == "sinusoidal":
+            # Compute sinusoidal position embeddings
+            pos_emb = sinusoidal_positional_encoding(pos, self.config.n_embd,device)
+            x = self.transformer.drop(tok_emb + pos_emb)
+        else:
+            # Learned positional embeddings
+            pos_emb = self.transformer.wpe(pos)  # Traditional position embeddings of shape (t, n_embd)
+            x = self.transformer.drop(tok_emb + pos_emb)
+        return x
 
     def crop_block_size(self, block_size):
         # model surgery to decrease the block size if necessary

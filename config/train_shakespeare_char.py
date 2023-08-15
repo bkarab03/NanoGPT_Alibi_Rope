@@ -32,6 +32,7 @@ beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
 
 warmup_iters = 100 # not super necessary potentially
 pos_enc_type="alibi"
+attention_type="causal"
 max_time=9999999
 
 # on macbook also add
