@@ -16,6 +16,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 from attention.attention import ATTENTION_REGISTRY
+from attention.scaled_dot_product_attention import SelfAttention
 from embeddings.sinusoidal import sinusoidal_positional_encoding
 
 
@@ -48,6 +49,7 @@ class MLP(nn.Module):
         return x
 
 def create_attention(config):
+  # print(config.attention_type)
   attn_cls = ATTENTION_REGISTRY[config.attention_type]
   return attn_cls(config)
 
@@ -67,7 +69,7 @@ class Block(nn.Module):
         return x
 
 @dataclass
-class GPTConfig:
+class ModelConfig:
     block_size: int = 1024
     vocab_size: int = 50304 # GPT-2 vocab_size of 50257, padded up to nearest multiple of 64 for efficiency
     n_layer: int = 12
@@ -76,10 +78,11 @@ class GPTConfig:
     dropout: float = 0.0
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
     pos_enc_type: str = "orijinal"
-    attention_type: str = "GatedMultiScaleRetention"
+    attention_type: str = "causal"
+    model_type: str = "GPT"
 
 
-class GPT(nn.Module):
+class TransformerModel(nn.Module):
 
     def __init__(self, config):
         super().__init__()
@@ -87,6 +90,7 @@ class GPT(nn.Module):
         assert config.block_size is not None
         self.config = config
         self.pos_enc_type = config.pos_enc_type
+        # print("config.vocab_size  "+ str(config.vocab_size))
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
@@ -95,12 +99,12 @@ class GPT(nn.Module):
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
             ln_f = LayerNorm(config.n_embd, bias=config.bias),
         ))
-        self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
+        self.output_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
         # with weight tying when using torch.compile() some warnings get generated:
         # "UserWarning: functional_call was passed multiple values for tied weights.
         # This behavior is deprecated and will be an error in future versions"
         # not 100% sure what this is, so far seems to be harmless. TODO investigate
-        self.transformer.wte.weight = self.lm_head.weight # https://paperswithcode.com/method/weight-tying
+        self.transformer.wte.weight = self.output_head.weight # https://paperswithcode.com/method/weight-tying
 
         # init all weights
         self.apply(self._init_weights)
@@ -132,7 +136,7 @@ class GPT(nn.Module):
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, idx, targets=None):
+    def forward(self, idx, targets=None, mask=None):
         device = idx.device
         b, t = idx.size()
         assert t <= self.config.block_size, f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
@@ -147,15 +151,25 @@ class GPT(nn.Module):
 
         if targets is not None:
             # if we are given some desired targets also calculate the loss
-            # # Check for invalid values in inputs and targets
-            # if torch.isnan(x).any() or torch.isinf(x).any():
-            #     print("Invalid values detected in inputs")
 
-            logits = self.lm_head(x)
+            torch.set_printoptions(profile="full")
+            # print(mask)
+            torch.set_printoptions(profile="default")
+            logits = self.output_head(x)
+
+            if mask is not None:
+                mask = mask.squeeze(dim=1)  # Remove the singleton dimension, resulting in shape (2, 128)
+                targets[mask == 0] = -1
+
+            torch.set_printoptions(profile="full")
+            # print(targets)
+            torch.set_printoptions(profile="default")
+
+
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
             # inference-time mini-optimization: only forward the lm_head on the very last position
-            logits = self.lm_head(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
+            logits = self.output_head(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
             loss = None
 
         return logits, loss
@@ -211,8 +225,8 @@ class GPT(nn.Module):
             print(f"overriding dropout rate to {override_args['dropout']}")
             config_args['dropout'] = override_args['dropout']
         # create a from-scratch initialized minGPT model
-        config = GPTConfig(**config_args)
-        model = GPT(config)
+        config = ModelConfig(**config_args)
+        model = TransformerModel(config)
         sd = model.state_dict()
         sd_keys = sd.keys()
         sd_keys = [k for k in sd_keys if not k.endswith('.attn.bias')] # discard this mask / buffer, not a param

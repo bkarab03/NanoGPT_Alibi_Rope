@@ -26,6 +26,7 @@ class Attention(nn.Module):
         self.n_head = config.n_head
         self.n_embd = config.n_embd
         self.dropout = config.dropout
+        self.model_type = config.model_type
         self.pos_enc_type = config.pos_enc_type
         self.rope = None
         self.alibi_biases = None
@@ -42,14 +43,9 @@ class Attention(nn.Module):
     def forward(self, x):
 
         B, T, C = x.size()
-
-        q, k, v = self.get_qkv(x)
-
+        q, k, v = self.c_attn(x).split(self.config.n_embd, dim=2)
         k = k.view(B, T, self.config.n_head, C // self.config.n_head).transpose(1, 2)
         q = q.view(B, T, self.config.n_head, C // self.config.n_head).transpose(1, 2)
         v = v.view(B, T, self.config.n_head, C // self.config.n_head).transpose(1, 2)
 
         return q, k, v, B, T, C
-
-    def get_qkv(self, x):
-        return self.c_attn(x).split(self.config.n_embd, dim=2)
