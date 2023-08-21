@@ -9,5 +9,7 @@ def create_attention(config):
         return SelfAttention(config)
     elif attention_type == 'grouped':
         return GroupedSelfAttention(config)
+    elif attention_type == 'retention':
+        return GroupedSelfAttention(config)
     else:
         raise ValueError(f"Unknown attention type: {attention_type}")

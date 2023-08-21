@@ -27,21 +27,18 @@ import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
-from model import ModelConfig, TransformerModel
-
-# from transformers import BertTokenizerFast
-# tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+from models.GPT import ModelConfig, TransformerModel
 
 
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
 # I/O
 out_dir = 'out'
-eval_interval = 10
+eval_interval = 250
 log_interval = 1
 eval_iters = 10
 eval_only = False # if True, script exits right after the first eval
-always_save_checkpoint = True # if True, always save a checkpoint after each eval
+always_save_checkpoint = False # if True, always save a checkpoint after each eval
 init_from = 'gpt2' # 'scratch' or 'resume' or 'gpt2*'
 # wandb logging
 wandb_log = False # disabled by default
@@ -119,6 +116,7 @@ ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=
 
 # poor man's data loader
 data_dir = os.path.join('data', dataset)
+
 train_data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
 val_data = np.memmap(os.path.join(data_dir, 'val.bin'), dtype=np.uint16, mode='r')
 def get_batch(split):
@@ -317,6 +315,10 @@ while True:
         param_group['lr'] = lr
 
     # evaluate the loss on train/val sets and write checkpoints
+    # print(f"iter_num = {iter_num}")
+    # print(f"eval_interval = {eval_interval}")
+    # print(f"master_process = {master_process}")
+    # print(f"---------- = ")
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
@@ -357,7 +359,7 @@ while True:
             if model_type == "BERT":
                 logits, loss = model(X, Y, mask)
             else:
-                  logits, loss = model(X, Y)
+                logits, loss = model(X, Y)
 
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
             eval_counter += 1

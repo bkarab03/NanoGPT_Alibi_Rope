@@ -6,7 +6,7 @@ from contextlib import nullcontext
 import numpy as np
 import time
 import torch
-from model import ModelConfig, TransformerModel
+from models.GPT import ModelConfig, TransformerModel
 
 # -----------------------------------------------------------------------------
 batch_size = 12
