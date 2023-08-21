@@ -14,9 +14,8 @@ from dataclasses import dataclass
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+from attention.attention_factory import create_attention
 
-from attention.attention import ATTENTION_REGISTRY
-from attention.scaled_dot_product_attention import SelfAttention
 from embeddings.sinusoidal import sinusoidal_positional_encoding
 
 
@@ -48,10 +47,6 @@ class MLP(nn.Module):
         x = self.dropout(x)
         return x
 
-def create_attention(config):
-  # print(config.attention_type)
-  attn_cls = ATTENTION_REGISTRY[config.attention_type]
-  return attn_cls(config)
 
 
 class Block(nn.Module):
@@ -99,12 +94,12 @@ class TransformerModel(nn.Module):
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
             ln_f = LayerNorm(config.n_embd, bias=config.bias),
         ))
-        self.output_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
+        self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
         # with weight tying when using torch.compile() some warnings get generated:
         # "UserWarning: functional_call was passed multiple values for tied weights.
         # This behavior is deprecated and will be an error in future versions"
         # not 100% sure what this is, so far seems to be harmless. TODO investigate
-        self.transformer.wte.weight = self.output_head.weight # https://paperswithcode.com/method/weight-tying
+        self.transformer.wte.weight = self.lm_head.weight # https://paperswithcode.com/method/weight-tying
 
         # init all weights
         self.apply(self._init_weights)
@@ -155,10 +150,10 @@ class TransformerModel(nn.Module):
             torch.set_printoptions(profile="full")
             # print(mask)
             torch.set_printoptions(profile="default")
-            logits = self.output_head(x)
+            logits = self.lm_head(x)
 
             if mask is not None:
-                mask = mask.squeeze(dim=1)  # Remove the singleton dimension, resulting in shape (2, 128)
+                mask = mask.squeeze(dim=1)
                 targets[mask == 0] = -1
 
             torch.set_printoptions(profile="full")
@@ -169,7 +164,7 @@ class TransformerModel(nn.Module):
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
             # inference-time mini-optimization: only forward the lm_head on the very last position
-            logits = self.output_head(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
+            logits = self.lm_head(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
             loss = None
 
         return logits, loss

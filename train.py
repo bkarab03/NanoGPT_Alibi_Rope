@@ -29,20 +29,20 @@ from torch.distributed import init_process_group, destroy_process_group
 
 from model import ModelConfig, TransformerModel
 
-from transformers import BertTokenizerFast
-tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+# from transformers import BertTokenizerFast
+# tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
 
 
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
 # I/O
 out_dir = 'out'
-eval_interval = 2000
+eval_interval = 10
 log_interval = 1
-eval_iters = 200
+eval_iters = 10
 eval_only = False # if True, script exits right after the first eval
 always_save_checkpoint = True # if True, always save a checkpoint after each eval
-init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
+init_from = 'gpt2' # 'scratch' or 'resume' or 'gpt2*'
 # wandb logging
 wandb_log = False # disabled by default
 wandb_project = 'owt'
@@ -172,7 +172,7 @@ else:
 
 # model init
 model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
-                  bias=bias, vocab_size=None, dropout=dropout,pos_enc_type=pos_enc_type) # start with model_args from command line
+                  bias=bias, vocab_size=None, dropout=dropout,pos_enc_type=pos_enc_type,attention_type=attention_type) # start with model_args from command line
 if init_from == 'scratch':
     # init a new model from scratch
     print("Initializing a new model from scratch")
@@ -316,33 +316,33 @@ while True:
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
-    # # evaluate the loss on train/val sets and write checkpoints
-    # if iter_num % eval_interval == 0 and master_process:
-    #     losses = estimate_loss()
-    #     print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-    #     if wandb_log:
-    #         wandb.log({
-    #             "iter": iter_num,
-    #             "train/loss": losses['train'],
-    #             "val/loss": losses['val'],
-    #             "lr": lr,
-    #             "mfu": running_mfu*100, # convert to percentage
-    #         })
-    #     if losses['val'] < best_val_loss or always_save_checkpoint:
-    #         best_val_loss = losses['val']
-    #         if iter_num > 0:
-    #             checkpoint = {
-    #                 'model': raw_model.state_dict(),
-    #                 'optimizer': optimizer.state_dict(),
-    #                 'model_args': model_args,
-    #                 'iter_num': iter_num,
-    #                 'best_val_loss': best_val_loss,
-    #                 'config': config,
-    #             }
-    #             print(f"saving checkpoint to {out_dir}")
-    #             torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
-    # if iter_num == 0 and eval_only:
-    #     break
+    # evaluate the loss on train/val sets and write checkpoints
+    if iter_num % eval_interval == 0 and master_process:
+        losses = estimate_loss()
+        print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+        if wandb_log:
+            wandb.log({
+                "iter": iter_num,
+                "train/loss": losses['train'],
+                "val/loss": losses['val'],
+                "lr": lr,
+                "mfu": running_mfu*100, # convert to percentage
+            })
+        if losses['val'] < best_val_loss or always_save_checkpoint:
+            best_val_loss = losses['val']
+            if iter_num > 0:
+                checkpoint = {
+                    'model': raw_model.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'model_args': model_args,
+                    'iter_num': iter_num,
+                    'best_val_loss': best_val_loss,
+                    'config': config,
+                }
+                print(f"saving checkpoint to {out_dir}")
+                torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
+    if iter_num == 0 and eval_only:
+        break
 
     # forward backward update, with optional gradient accumulation to simulate larger batch size
     # and using the GradScaler if data type is float16
@@ -354,19 +354,23 @@ while True:
             # looking at the source of that context manager, it just toggles this variable
             model.require_backward_grad_sync = (micro_step == gradient_accumulation_steps - 1)
         with ctx:
-            logits, loss = model(X, Y, mask)
+            if model_type == "BERT":
+                logits, loss = model(X, Y, mask)
+            else:
+                  logits, loss = model(X, Y)
+
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
             eval_counter += 1
             if eval_counter % 100 == 0 and model_type=="BERT":  # Print predictions every 300 evaluations
                 # Decoding tokens to text
                 preds = logits.argmax(dim=-1)  # Most probable tokens
 
-                print_human_readable(X, Y)
-                pred_texts = tokenizer.batch_decode(preds,skip_special_tokens=False)
-                label_texts = tokenizer.batch_decode(Y)
-                print("Predictions:")
-                print(pred_texts)
-                print("-----------------")
+                # print_human_readable(X, Y)
+                # pred_texts = tokenizer.batch_decode(preds,skip_special_tokens=False)
+                # label_texts = tokenizer.batch_decode(Y)
+                # print("Predictions:")
+                # print(pred_texts)
+                # print("-----------------")
         # immediately async prefetch next batch while model is doing the forward pass on the GPU
         if model_type == "BERT":
             X, Y, mask = prepare_batch_for_device() # fetch the very first batch
@@ -399,9 +403,9 @@ while True:
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
         with open('output.txt', 'a') as f:  # 'a' mode appends to the file if it exists
             f.write(f"encoding {pos_enc_type} iter {iter_num}: loss {lossf:.4f}%\n")
-        if time.time() - start_time > max_time:  # Use the max_time from args
-            print("Timedout")
-            break
+        # if time.time() - start_time > max_time:  # Use the max_time from args
+        #     print("Timedout")
+        #     break
 
     iter_num += 1
     local_iter_num += 1

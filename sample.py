@@ -6,14 +6,16 @@ import pickle
 from contextlib import nullcontext
 import torch
 import tiktoken
+import transformers
+
 from model import ModelConfig, TransformerModel
 
 # -----------------------------------------------------------------------------
-init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
-out_dir = 'out' # ignored if init_from is not 'resume'
-start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
-num_samples = 10 # number of samples to draw
-max_new_tokens = 500 # number of tokens generated in each sample
+init_from = 'gpt2' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
+out_dir = 'out-shakespeare' # ignored if init_from is not 'resume'
+start = "We are accounted poor citizens" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
+num_samples = 1 # number of samples to draw
+max_new_tokens = 100 # number of tokens generated in each sample
 temperature = 0.8 # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
 top_k = 200 # retain only the top_k most likely tokens, clamp others to have 0 probability
 seed = 1337
@@ -45,8 +47,10 @@ if init_from == 'resume':
             state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
     model.load_state_dict(state_dict)
 elif init_from.startswith('gpt2'):
+    # model = transformers.BertModel.from_pretrained('bert-base-uncased')
+
     # init from a given GPT-2 model
-    model = TransformerModel.from_pretrained(init_from, dict(dropout=0.0))
+     model = TransformerModel.from_pretrained(init_from, dict(dropout=0.0))
 
 model.eval()
 model.to(device)

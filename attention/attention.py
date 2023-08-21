@@ -1,16 +1,6 @@
 import torch
 from torch import nn as nn
 
-# Attention Registry and Registration Function
-ATTENTION_REGISTRY = {}
-
-def register_attention(name):
-  def register_attn_cls(cls):
-    ATTENTION_REGISTRY[name] = cls
-    return cls
-  return register_attn_cls
-
-
 class Attention(nn.Module):
 
     def __init__(self, config):

@@ -13,7 +13,7 @@ wandb_log = False # override via command line if you like
 wandb_project = 'shakespeare-char'
 wandb_run_name = 'mini-gpt'
 
-dataset = 'shakespeare_char'
+dataset = 'shakespeare'
 gradient_accumulation_steps = 1
 batch_size = 64
 block_size = 256 # context of up to 256 previous characters
@@ -33,7 +33,7 @@ beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
 warmup_iters = 100 # not super necessary potentially
 pos_enc_type="alibi"
 attention_type="causal"
-model_type="BERT"
+model_type="GPT"
 max_time=9999999
 
 # on macbook also add
