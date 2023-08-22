@@ -315,10 +315,6 @@ while True:
         param_group['lr'] = lr
 
     # evaluate the loss on train/val sets and write checkpoints
-    # print(f"iter_num = {iter_num}")
-    # print(f"eval_interval = {eval_interval}")
-    # print(f"master_process = {master_process}")
-    # print(f"---------- = ")
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")

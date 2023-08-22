@@ -273,6 +273,13 @@ class TransformerModel(nn.Module):
         fused_available = 'fused' in inspect.signature(torch.optim.AdamW).parameters
         use_fused = fused_available and device_type == 'cuda'
         extra_args = dict(fused=True) if use_fused else dict()
+
+        for param_group in optim_groups:
+            for param in param_group['params']:
+                print(param.device, param.dtype)
+
+
+
         optimizer = torch.optim.AdamW(optim_groups, lr=learning_rate, betas=betas, **extra_args)
         print(f"using fused AdamW: {use_fused}")
 
