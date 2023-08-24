@@ -9978,3 +9978,7 @@ encoding alibi iter 70: loss 2.5666%
 encoding alibi iter 80: loss 2.4751%
 encoding alibi iter 90: loss 2.4537%
 encoding alibi iter 100: loss 2.3633%
+encoding alibi iter 0: loss 4.2209%
+encoding alibi iter 10: loss 3.6382%
+encoding alibi iter 20: loss 3.3366%
+encoding alibi iter 30: loss 3.1645%

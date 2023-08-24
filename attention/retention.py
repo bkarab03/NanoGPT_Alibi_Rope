@@ -5,6 +5,8 @@ import torch.nn as nn
 
 from attention.xpos_relative_position import XPOS
 
+# This code has been copied from https://github.com/Jamie-Stirling/RetNet
+# Official RetNet implementation can be found at https://github.com/microsoft/torchscale
 
 class SimpleRetention(nn.Module):
     def __init__(self, hidden_size, gamma, head_size=None, double_v_dim=False):
@@ -117,7 +119,7 @@ class SimpleRetention(nn.Module):
 class MultiScaleRetention(nn.Module):
     def __init__(self, config, double_v_dim=False):
         """
-        Multi-scale retention mechanism based on the paper
+        Multiscale retention mechanism based on the paper
         "Retentive Network: A Successor to Transformer for Large Language Models"[https://arxiv.org/pdf/2307.08621.pdf]
         """
         super(MultiScaleRetention, self).__init__()
@@ -143,7 +145,7 @@ class MultiScaleRetention(nn.Module):
 
     def forward(self, X):
         """
-        parallel representation of the multi-scale retention mechanism
+        parallel representation of the multiscale retention mechanism
         """
 
         # apply each individual retention mechanism to X
@@ -159,7 +161,7 @@ class MultiScaleRetention(nn.Module):
 
     def forward_recurrent(self, x_n, s_n_1s, n):
         """
-        recurrent representation of the multi-scale retention mechanism
+        recurrent representation of the multiscale retention mechanism
         x_n: (batch_size, 1, hidden_size)
         s_n_1s: (batch_size, heads, head_size, head_size)
 
@@ -183,7 +185,7 @@ class MultiScaleRetention(nn.Module):
 
     def forward_chunkwise(self, x_i, r_i_1s, i):
         """
-        chunkwise representation of the multi-scale retention mechanism
+        chunkwise representation of the multiscale retention mechanism
         x_i: (batch_size, chunk_size, hidden_size)
         r_i_1s: (batch_size, heads, head_size, head_size)
         """
