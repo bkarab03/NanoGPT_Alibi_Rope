@@ -1,4 +1,14 @@
+This repository is a personal project based on Karpathy's nanoGPT, to which I extend my total respect and admiration. As someone who is venturing into the fascinating world of AI and trying to learn more about it, I decided to explore and modify this project. Please be aware that this is a personal endeavor, and as I am new to the open-source community, it may not work reliably. I'm still learning the rules and best practices of contributing to open-source projects, so if I've made a mistake or if there's something you believe I could do better, please don't hesitate to message me on GitHub. I mean no disrespect to anyone, and I'm eager to learn and grow within this community. Thank you for your understanding and support!
 
+Additionally, it's important to note that some of the components within this project have been copied and pasted from other repositories, and I have not written everything from scratch. Specifically:
+
+The RetNet implementation mostly comes from [Jamie-Stirling's RetNet](https://github.com/Jamie-Stirling/RetNet)
+XPOS is sourced from [ Microsoft's torchscale repository](https://github.com/microsoft/torchscale)
+I want to express my gratitude to the original authors for their excellent work, which has greatly assisted me in this learning journey. Their contributions are duly recognized, and links to the original work are provided for most of them.
+
+
+
+Here is the Orijinal nanoGPT Read.me
 # nanoGPT
 
 ![nanoGPT](assets/nanogpt.jpg)
