@@ -152,6 +152,9 @@ class TransformerModel(nn.Module):
             torch.set_printoptions(profile="default")
             logits = self.lm_head(x)
 
+
+            # If a mask is provided, set target values to -1 where mask is 0.
+            # This ensures that positions with a mask value of 0 are ignored during loss computation.
             if mask is not None:
                 mask = mask.squeeze(dim=1)
                 targets[mask == 0] = -1

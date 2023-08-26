@@ -27,8 +27,10 @@ import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
+from data.squad.prepare import tokenizer
 from models.GPT import ModelConfig, TransformerModel
 
+import cProfile
 
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
@@ -75,6 +77,8 @@ dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported
 compile = True # use PyTorch 2.0 to compile the model to be faster
 pos_enc_type = ""
 model_type = ""
+attention_type = ""
+max_time_minutes=0
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
 exec(open('configurator.py').read()) # overrides from command line or config file
@@ -115,46 +119,53 @@ ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torc
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 
 # poor man's data loader
-data_dir = os.path.join('data', dataset)
 
-train_data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
-val_data = np.memmap(os.path.join(data_dir, 'val.bin'), dtype=np.uint16, mode='r')
-def get_batch(split):
-    data = train_data if split == 'train' else val_data
-    ix = torch.randint(len(data) - block_size, (batch_size,))
-    x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
-    y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
-    if device_type == 'cuda':
-        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
-        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
-    else:
-        x, y = x.to(device), y.to(device)
-    return x, y
-
-def get_batch_bert(batch_size=batch_size):
-    inputs_and_masks_file = f"data/squad/dev-v2_inputs_and_masks.pkl"  # Adjust the path as needed
+if model_type == 'BERT':
+    inputs_and_masks_file = f"data/squad/dev-v2_inputs_and_masks.pt"
     if os.path.exists(inputs_and_masks_file):
-        # Load preprocessed data from pickle file
-        with open(inputs_and_masks_file, 'rb') as f:
-            inputs_and_masks = pickle.load(f)
+        inputs_and_masks = torch.load(inputs_and_masks_file)
     else:
         raise ValueError(f"No preprocessed data file found at {inputs_and_masks_file}. Please run the prepare_data function first.")
+else:
+    data_dir = os.path.join('data', dataset)
+    train_data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
+    val_data = np.memmap(os.path.join(data_dir, 'val.bin'), dtype=np.uint16, mode='r')
+def get_batch(split = "train"):
+    bert_mlm_mask = None
+    if model_type == 'GPT':
+        data = train_data if split == 'train' else val_data
+        ix = torch.randint(len(data) - block_size, (batch_size,))
+        x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
+        y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+        if device_type == 'cuda':
+            x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+        else:
+            x, y = x.to(device), y.to(device)
 
-    random_indices = torch.randint(len(inputs_and_masks), (batch_size,))
-    batch = [inputs_and_masks[i] for i in random_indices]
-    return batch
+    elif model_type == 'BERT':
+        random_indices = torch.randint(len(inputs_and_masks), (batch_size,))
+        batch = [inputs_and_masks[i] for i in random_indices]
+        # t_start= time.time()
 
-def prepare_batch_for_device():
-    batch = get_batch_bert()
-    X = torch.stack([item['input_ids'].squeeze(0) for item in batch]).to(device)
-    Y = torch.stack([item['labels'].squeeze(0) for item in batch]).to(device)
-    mask = torch.stack([item['mask'] for item in batch]).to(device)
-    return X, Y, mask
+        # Pre-allocate memory
+        x = torch.empty((batch_size, batch[0]['input_ids'].shape[1]), dtype=batch[0]['input_ids'].dtype, device=device)
+        y = torch.empty((batch_size, batch[0]['target_ids'].shape[1]), dtype=batch[0]['target_ids'].dtype, device=device)
+        bert_mlm_mask = torch.empty((batch_size, batch[0]['mask'].shape[1]), dtype=batch[0]['mask'].dtype, device=device)
+
+        for i, item in enumerate(batch):
+            x[i] = item['input_ids'].squeeze(0).to(device, non_blocking=True)
+            y[i] = item['target_ids'].squeeze(0).to(device, non_blocking=True)
+            bert_mlm_mask[i] = item['mask'].to(device, non_blocking=True)
+    else:
+        raise ValueError(f"Unsupported model_type: {model_type}")
+
+    # print(f"get batch time {(time.time()-t_start)*1000:.2f}ms")
+    return x, y, bert_mlm_mask
+
 
 # init these up here, can override if init_from='resume' (i.e. from a checkpoint)
 iter_num = 0
 best_val_loss = 1e9
-
 
 if model_type == "BERT":
     meta_vocab_size = tokenizer.vocab_size
@@ -243,20 +254,11 @@ def estimate_loss():
     model.eval()
     for split in ['train', 'val']:
         losses = torch.zeros(eval_iters)
-        for k in range(eval_iters):
-            if model_type == "BERT":
-                batches = get_batch_bert()
-                for batch in batches:
-                    X = batch['input_ids'].to(device)
-                    Y = batch['labels'].to(device)
-                    mask = batch['mask'].to(device)
-                    logits, loss = model(X, Y, mask=mask)
-                    losses[k] = loss.item()
-            else:
-                X, Y = get_batch(split)
-                with ctx:
-                    logits, loss = model(X, Y)
-                losses[k] = loss.item()
+        for k in range(0):
+            X, Y, mask = get_batch(split) # fetch the very first batch
+            with ctx:
+                logits, loss = model(X, Y)
+            losses[k] = loss.item()
         out[split] = losses.mean()
     model.train()
     return out
@@ -280,26 +282,13 @@ if wandb_log and master_process:
     import wandb
     wandb.init(project=wandb_project, name=wandb_run_name, config=config)
 
-def print_human_readable(X, Y, num_items=1):
-    X = X.cpu().numpy()
-    Y = Y.cpu().numpy()
-
-    for i in range(num_items):
-        print("Original sequence:")
-        print(tokenizer.decode(Y[i], skip_special_tokens=False))
-        print()
-        print("-----------------")
-
-        print("Input sequence (masked):")
-        print(tokenizer.decode(X[i], skip_special_tokens=False))
-        print("-----------------")
-
+pr = cProfile.Profile()
+pr.enable()
 
 # training loop
-if model_type == "BERT":
-    X, Y, mask = prepare_batch_for_device() # fetch the very first batch
-else:
-    X, Y = get_batch('train') # fetch the very first batch
+X, Y, mask = get_batch() # fetch the very first batch
+
+# fetch the very first batch
 t0 = time.time()
 local_iter_num = 0 # number of iterations in the lifetime of this process
 raw_model = model.module if ddp else model # unwrap DDP container if needed
@@ -352,28 +341,24 @@ while True:
             # looking at the source of that context manager, it just toggles this variable
             model.require_backward_grad_sync = (micro_step == gradient_accumulation_steps - 1)
         with ctx:
-            if model_type == "BERT":
-                logits, loss = model(X, Y, mask)
-            else:
-                logits, loss = model(X, Y)
+            logits, loss = model(X, Y, mask)
 
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
             eval_counter += 1
-            if eval_counter % 100 == 0 and model_type=="BERT":  # Print predictions every 300 evaluations
-                # Decoding tokens to text
-                preds = logits.argmax(dim=-1)  # Most probable tokens
-
-                # print_human_readable(X, Y)
-                # pred_texts = tokenizer.batch_decode(preds,skip_special_tokens=False)
-                # label_texts = tokenizer.batch_decode(Y)
-                # print("Predictions:")
-                # print(pred_texts)
-                # print("-----------------")
+            # if eval_counter % 10 == 0 and model_type=="BERT":  # Print predictions every 300 evaluations
+            #     # Decoding tokens to text
+            #     preds = logits.argmax(dim=-1)  # Most probable tokens
+            #
+            #     print_human_readable(X, Y)
+            #     pred_texts = tokenizer.batch_decode(preds,skip_special_tokens=False)
+            #     label_texts = tokenizer.batch_decode(Y)
+            #     print("Predictions:")
+            #     print(pred_texts)
+            #     print("-----------------")
         # immediately async prefetch next batch while model is doing the forward pass on the GPU
-        if model_type == "BERT":
-            X, Y, mask = prepare_batch_for_device() # fetch the very first batch
-        else:
-            X, Y = get_batch('train') # fetch the very first batch
+        X, Y, mask = get_batch()
+
+        # fetch the very first batch
         # backward pass, with gradient scaling if training in fp16
 
         scaler.scale(loss).backward()
@@ -399,11 +384,16 @@ while True:
             mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
-        with open('output.txt', 'a') as f:  # 'a' mode appends to the file if it exists
-            f.write(f"encoding {pos_enc_type} iter {iter_num}: loss {lossf:.4f}%\n")
-        # if time.time() - start_time > max_time:  # Use the max_time from args
-        #     print("Timedout")
-        #     break
+
+        if max_time_minutes != 0 and (time.time() - start_time) / 60 > max_time_minutes:   # Use the max_time from args
+            print(f"Finished iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+            with open('output.txt', 'a') as f:  # 'a' mode appends to the file if it exists
+                f.write(f"---------------------------\n")
+                f.write(f"{config}\n")
+                f.write(f"attention_type {attention_type} encoding {pos_enc_type} iter {iter_num}: loss {lossf:.4f}%\n")
+                f.write(f"---------------------------\n")
+
+            break
 
     iter_num += 1
     local_iter_num += 1
@@ -411,6 +401,9 @@ while True:
     # termination conditions
     if iter_num > max_iters:
         break
+
+pr.disable()
+pr.dump_stats('training_loop_stats.prof')
 
 if ddp:
     destroy_process_group()

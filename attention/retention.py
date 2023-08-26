@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from attention.xpos_relative_position import XPOS
 
+
 # This code has been copied from https://github.com/Jamie-Stirling/RetNet
 # Official RetNet implementation can be found at https://github.com/microsoft/torchscale
 

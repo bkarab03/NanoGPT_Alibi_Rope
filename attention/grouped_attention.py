@@ -1,6 +1,6 @@
 import math
 
-from attention.attention import Attention
+from attention.base import Attention
 from embeddings.alibi import get_alibi_biases, get_slopes
 from embeddings.rotary_embeddings import RotaryPositionalEmbeddings
 from torch.nn import functional as F

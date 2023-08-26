@@ -79,13 +79,3 @@ class XPOS(nn.Module):
 
         x = apply_rotary_pos_emb(x, -sin, cos, scale)
         return x
-    
-# test
-if __name__ == "__main__":
-    x = torch.eye(4).unsqueeze(0)
-    xpos = XPOS(4)
-    x_rot = xpos(x)
-    # apply reverse
-    x_rot_rev = xpos.forward(x)
-
-    print(x_rot @ x_rot_rev.transpose(-1, -2))
