@@ -31,7 +31,7 @@ min_lr = 1e-4 # learning_rate / 10 usually
 beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
 
 warmup_iters = 100 # not super necessary potentially
-pos_enc_type="alibi"
+pos_enc_type="orijinal"
 attention_type="causal"
 model_type="GPT"
 max_time=9999999

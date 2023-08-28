@@ -15,7 +15,7 @@ $ torchrun --nproc_per_node=8 --nnodes=2 --node_rank=0 --master_addr=123.456.123
 $ torchrun --nproc_per_node=8 --nnodes=2 --node_rank=1 --master_addr=123.456.123.456 --master_port=1234 train.py
 (If your cluster does not have Infiniband interconnect prepend NCCL_IB_DISABLE=1)
 """
-
+import json
 import os
 import time
 import math
@@ -29,6 +29,8 @@ from torch.distributed import init_process_group, destroy_process_group
 
 from data.squad.prepare import tokenizer
 from models.GPT import ModelConfig, TransformerModel
+
+import matplotlib.pyplot as plt
 
 import cProfile
 
@@ -254,7 +256,7 @@ def estimate_loss():
     model.eval()
     for split in ['train', 'val']:
         losses = torch.zeros(eval_iters)
-        for k in range(0):
+        for k in range(eval_iters):
             X, Y, mask = get_batch(split) # fetch the very first batch
             with ctx:
                 logits, loss = model(X, Y)
@@ -295,6 +297,8 @@ raw_model = model.module if ddp else model # unwrap DDP container if needed
 running_mfu = -1.0
 eval_counter = 0
 start_time = time.time()  # Record the start time of the loop
+iter_losses = []
+
 
 while True:
 
@@ -304,30 +308,35 @@ while True:
         param_group['lr'] = lr
 
     # evaluate the loss on train/val sets and write checkpoints
+    # print("iter_num")
+    # print(iter_num)
+    # print("eval_interval")
+    # print(eval_interval)
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
+
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-        if wandb_log:
-            wandb.log({
-                "iter": iter_num,
-                "train/loss": losses['train'],
-                "val/loss": losses['val'],
-                "lr": lr,
-                "mfu": running_mfu*100, # convert to percentage
-            })
-        if losses['val'] < best_val_loss or always_save_checkpoint:
-            best_val_loss = losses['val']
-            if iter_num > 0:
-                checkpoint = {
-                    'model': raw_model.state_dict(),
-                    'optimizer': optimizer.state_dict(),
-                    'model_args': model_args,
-                    'iter_num': iter_num,
-                    'best_val_loss': best_val_loss,
-                    'config': config,
-                }
-                print(f"saving checkpoint to {out_dir}")
-                torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
+        # if wandb_log:
+        #     wandb.log({
+        #         "iter": iter_num,
+        #         "train/loss": losses['train'],
+        #         "val/loss": losses['val'],
+        #         "lr": lr,
+        #         "mfu": running_mfu*100, # convert to percentage
+        #     })
+        # if losses['val'] < best_val_loss or always_save_checkpoint:
+        #     best_val_loss = losses['val']
+        #     if iter_num > 0:
+        #         checkpoint = {
+        #             'model': raw_model.state_dict(),
+        #             'optimizer': optimizer.state_dict(),
+        #             'model_args': model_args,
+        #             'iter_num': iter_num,
+        #             'best_val_loss': best_val_loss,
+        #             'config': config,
+        #         }
+        #         print(f"saving checkpoint to {out_dir}")
+        #         torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
     if iter_num == 0 and eval_only:
         break
 
@@ -376,14 +385,16 @@ while True:
     t1 = time.time()
     dt = t1 - t0
     t0 = t1
-    if iter_num % log_interval == 0 and master_process:
-        # get loss as float. note: this is a CPU-GPU sync point
-        # scale up to undo the division above, approximating the true total loss (exact would have been a sum)
+    # Inside your while loop:
+    if master_process:
         lossf = loss.item() * gradient_accumulation_steps
+        iter_losses.append(lossf)
+        if iter_num % log_interval == 0:
+            print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+
         if local_iter_num >= 5: # let the training loop settle a bit
             mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
-        print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
 
         if max_time_minutes != 0 and (time.time() - start_time) / 60 > max_time_minutes:   # Use the max_time from args
             print(f"Finished iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
@@ -401,6 +412,12 @@ while True:
     # termination conditions
     if iter_num > max_iters:
         break
+
+os.makedirs('charts', exist_ok=True)
+loss_filename = f"charts/loss_data_{model_type}_{n_embd}_{pos_enc_type}_{attention_type}.json"
+with open(loss_filename, 'w') as f:
+    json.dump(iter_losses, f)
+
 
 pr.disable()
 pr.dump_stats('training_loop_stats.prof')
