@@ -35,6 +35,7 @@ pos_enc_type="orijinal"
 attention_type="causal"
 model_type="GPT"
 max_time=9999999
+disable_attn=False
 
 # on macbook also add
 # device = 'cpu'  # run on cpu only

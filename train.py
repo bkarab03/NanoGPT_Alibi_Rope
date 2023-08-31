@@ -43,7 +43,7 @@ log_interval = 1
 eval_iters = 10
 eval_only = False # if True, script exits right after the first eval
 always_save_checkpoint = False # if True, always save a checkpoint after each eval
-init_from = 'gpt2' # 'scratch' or 'resume' or 'gpt2*'
+init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
 # wandb logging
 wandb_log = False # disabled by default
 wandb_project = 'owt'
@@ -81,6 +81,8 @@ pos_enc_type = ""
 model_type = ""
 attention_type = ""
 max_time_minutes=0
+disable_attn=False
+
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
 exec(open('configurator.py').read()) # overrides from command line or config file
@@ -121,7 +123,6 @@ ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torc
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 
 # poor man's data loader
-
 if model_type == 'BERT':
     inputs_and_masks_file = f"data/squad/dev-v2_inputs_and_masks.pt"
     if os.path.exists(inputs_and_masks_file):
@@ -183,7 +184,7 @@ else:
 
 # model init
 model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
-                  bias=bias, vocab_size=None, dropout=dropout,pos_enc_type=pos_enc_type,attention_type=attention_type) # start with model_args from command line
+                  bias=bias, vocab_size=None, dropout=dropout,pos_enc_type=pos_enc_type,attention_type=attention_type,disable_attn=disable_attn) # start with model_args from command line
 if init_from == 'scratch':
     # init a new model from scratch
     print("Initializing a new model from scratch")

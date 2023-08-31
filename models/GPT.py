@@ -54,12 +54,15 @@ class Block(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.ln_1 = LayerNorm(config.n_embd, bias=config.bias)
-        self.attn = create_attention(config)
+        self.disable_attn = config.disable_attn
+        if not self.disable_attn:
+            self.attn = create_attention(config)
         self.ln_2 = LayerNorm(config.n_embd, bias=config.bias)
         self.mlp = MLP(config)
 
     def forward(self, x):
-        x = x + self.attn(self.ln_1(x))
+        if not self.disable_attn:
+            x = x + self.attn(self.ln_1(x))
         x = x + self.mlp(self.ln_2(x))
         return x
 
@@ -74,6 +77,7 @@ class ModelConfig:
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
     pos_enc_type: str = "orijinal"
     attention_type: str = "causal"
+    disable_attn: bool = False
     model_type: str = "GPT"
 
 
