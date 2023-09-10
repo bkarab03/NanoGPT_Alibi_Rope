@@ -9,7 +9,7 @@ block_size = "1024"
 time_min = "3"
 
 training_commands = [
-    f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters=5000 --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal --pos_enc_type=causal",
+    f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters=5000 --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal"
     # f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters=5000 --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal --pos_enc_type=alibi",
     # f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters=5000 --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal --pos_enc_type=rope"
 ]

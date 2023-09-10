@@ -3,7 +3,7 @@ import math
 import torch
 import torch.nn as nn
 
-from attention.xpos_relative_position import XPOS
+from embeddings.xpos_relative_position import XPOS
 
 
 # This code has been copied from https://github.com/Jamie-Stirling/RetNet

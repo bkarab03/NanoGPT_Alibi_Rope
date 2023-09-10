@@ -15,6 +15,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 from attention.attention_factory import create_attention
+from attention.memory import Memory
 
 from embeddings.sinusoidal import sinusoidal_positional_encoding
 
@@ -60,11 +61,13 @@ class Block(nn.Module):
         self.ln_2 = LayerNorm(config.n_embd, bias=config.bias)
         self.mlp = MLP(config)
 
-    def forward(self, x):
+    def forward(self, x, memory=None):
+        new_memory = None
         if not self.disable_attn:
-            x = x + self.attn(self.ln_1(x))
+            # Assuming the attention class is modified to return new_memory
+            x = self.attn(self.ln_1(x))
         x = x + self.mlp(self.ln_2(x))
-        return x
+        return x, new_memory
 
 @dataclass
 class ModelConfig:
@@ -81,7 +84,7 @@ class ModelConfig:
     model_type: str = "GPT"
 
 
-class TransformerModel(nn.Module):
+class XL(nn.Module):
 
     def __init__(self, config):
         super().__init__()
@@ -136,7 +139,7 @@ class TransformerModel(nn.Module):
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, idx, targets=None, mask=None):
+    def forward(self, idx, targets=None, mask=None, memory_states=None):
         device = idx.device
         b, t = idx.size()
         assert t <= self.config.block_size, f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
@@ -145,18 +148,26 @@ class TransformerModel(nn.Module):
         # forward the GPT model itself
         x = self._compute_embeddings(device, idx, pos)
 
-        for block in self.transformer.h:
-            x = block(x)
+        # Initialize new memory states
+        new_memory_states = [None] * len(self.transformer.h)
+
+        print("Length of memory_states:", len(memory_states) if memory_states else 0)
+        print("Length of new_memory_states:", len(new_memory_states))
+
+        for i, block in enumerate(self.transformer.h):
+            # Update each transformer block to accept and return memory states
+            x, new_memory = block(x, None)
+
+            # Store new memory states
+            new_memory_states[i] = new_memory
+
+
         x = self.transformer.ln_f(x)
 
         if targets is not None:
             # if we are given some desired targets also calculate the loss
 
-            torch.set_printoptions(profile="full")
-            # print(mask)
-            torch.set_printoptions(profile="default")
             logits = self.lm_head(x)
-
 
             # If a mask is provided, set target values to -1 where mask is 0.
             # This ensures that positions with a mask value of 0 are ignored during loss computation.
@@ -164,18 +175,14 @@ class TransformerModel(nn.Module):
                 mask = mask.squeeze(dim=1)
                 targets[mask == 0] = -1
 
-            torch.set_printoptions(profile="full")
-            # print(targets)
-            torch.set_printoptions(profile="default")
-
-
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
             # inference-time mini-optimization: only forward the lm_head on the very last position
             logits = self.lm_head(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
             loss = None
 
-        return logits, loss
+        return logits, loss, new_memory_states
+
 
     def _compute_embeddings(self, device, idx, pos):
         tok_emb = self.transformer.wte(idx)  # token embeddings of shape (b, t, n_embd)

@@ -34,11 +34,13 @@ import matplotlib.pyplot as plt
 
 import cProfile
 
+from models.XL import XL
+
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
 # I/O
 out_dir = 'out'
-eval_interval = 250
+eval_interval = 100
 log_interval = 1
 eval_iters = 10
 eval_only = False # if True, script exits right after the first eval
@@ -46,8 +48,8 @@ always_save_checkpoint = False # if True, always save a checkpoint after each ev
 init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
 # wandb logging
 wandb_log = False # disabled by default
-wandb_project = 'owt'
-wandb_run_name = 'gpt2' # 'run' + str(time.time())
+wandb_project = 'Berks First Project'
+wandb_run_name = 'run ' +  str(time.time())
 # data
 dataset = 'openwebtext'
 gradient_accumulation_steps = 5 * 8 # used to simulate larger batch sizes
@@ -184,7 +186,9 @@ else:
 
 # model init
 model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
-                  bias=bias, vocab_size=None, dropout=dropout,pos_enc_type=pos_enc_type,attention_type=attention_type,disable_attn=disable_attn) # start with model_args from command line
+                  bias=bias, vocab_size=None, dropout=dropout,pos_enc_type=pos_enc_type
+                  ,attention_type=attention_type,disable_attn=disable_attn)
+ # start with model_args from command line
 if init_from == 'scratch':
     # init a new model from scratch
     print("Initializing a new model from scratch")
@@ -193,6 +197,7 @@ if init_from == 'scratch':
         print("defaulting to vocab_size of GPT-2 to 50304 (50257 rounded up for efficiency)")
     model_args['vocab_size'] = meta_vocab_size if meta_vocab_size is not None else 50304
     model_conf = ModelConfig(**model_args)
+    # model = TransformerModel(model_conf)
     model = TransformerModel(model_conf)
 elif init_from == 'resume':
     print(f"Resuming training from {out_dir}")
@@ -258,7 +263,7 @@ def estimate_loss():
     for split in ['train', 'val']:
         losses = torch.zeros(eval_iters)
         for k in range(eval_iters):
-            X, Y, mask = get_batch(split) # fetch the very first batch
+            X, Y, mask = get_batch(split)
             with ctx:
                 logits, loss = model(X, Y)
             losses[k] = loss.item()
@@ -283,6 +288,7 @@ def get_lr(it):
 # logging
 if wandb_log and master_process:
     import wandb
+    print("here")
     wandb.init(project=wandb_project, name=wandb_run_name, config=config)
 
 pr = cProfile.Profile()
@@ -300,7 +306,9 @@ eval_counter = 0
 start_time = time.time()  # Record the start time of the loop
 iter_losses = []
 
+MAX_MEMORY_STATES = 500  # or any other number that you find appropriate
 
+memory_state = None  # Initialize as None
 while True:
 
     # determine and set the learning rate for this iteration
@@ -309,35 +317,31 @@ while True:
         param_group['lr'] = lr
 
     # evaluate the loss on train/val sets and write checkpoints
-    # print("iter_num")
-    # print(iter_num)
-    # print("eval_interval")
-    # print(eval_interval)
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
 
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-        # if wandb_log:
-        #     wandb.log({
-        #         "iter": iter_num,
-        #         "train/loss": losses['train'],
-        #         "val/loss": losses['val'],
-        #         "lr": lr,
-        #         "mfu": running_mfu*100, # convert to percentage
-        #     })
-        # if losses['val'] < best_val_loss or always_save_checkpoint:
-        #     best_val_loss = losses['val']
-        #     if iter_num > 0:
-        #         checkpoint = {
-        #             'model': raw_model.state_dict(),
-        #             'optimizer': optimizer.state_dict(),
-        #             'model_args': model_args,
-        #             'iter_num': iter_num,
-        #             'best_val_loss': best_val_loss,
-        #             'config': config,
-        #         }
-        #         print(f"saving checkpoint to {out_dir}")
-        #         torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
+        if wandb_log:
+            wandb.log({
+                "iter": iter_num,
+                "train/loss": losses['train'],
+                "val/loss": losses['val'],
+                "lr": lr,
+                "mfu": running_mfu*100, # convert to percentage
+            })
+        if losses['val'] < best_val_loss or always_save_checkpoint:
+            best_val_loss = losses['val']
+            if iter_num > 0:
+                checkpoint = {
+                    'model': raw_model.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'model_args': model_args,
+                    'iter_num': iter_num,
+                    'best_val_loss': best_val_loss,
+                    'config': config,
+                }
+                print(f"saving checkpoint to {out_dir}")
+                torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
     if iter_num == 0 and eval_only:
         break
 
@@ -351,7 +355,14 @@ while True:
             # looking at the source of that context manager, it just toggles this variable
             model.require_backward_grad_sync = (micro_step == gradient_accumulation_steps - 1)
         with ctx:
-            logits, loss = model(X, Y, mask)
+            # Forward pass now also returns new memory states
+            # logits, loss= model(X, Y, mask)
+            # logits, loss, new_memory_states= model(X, Y, mask,memory_state)
+            logits, loss= model(X, Y, mask)
+
+            # Add the new_memory_states to existing memory_states
+            # memory_state = [mem.detach() for mem in new_memory_states]
+
 
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
             eval_counter += 1
@@ -422,6 +433,7 @@ with open(loss_filename, 'w') as f:
 
 pr.disable()
 pr.dump_stats('training_loop_stats.prof')
+wandb.finish()
 
 if ddp:
     destroy_process_group()
