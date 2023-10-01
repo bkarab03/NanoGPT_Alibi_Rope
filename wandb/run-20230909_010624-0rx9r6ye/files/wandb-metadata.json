@@ -1,0 +1,66 @@
+{
+    "os": "Windows-10-10.0.22621-SP0",
+    "python": "3.11.4",
+    "heartbeatAt": "2023-09-08T22:06:25.143029",
+    "startedAt": "2023-09-08T22:06:24.001191",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "config/train_shakespeare_char.py",
+        "--device=cuda",
+        "--compile=False",
+        "--wandb_log=True",
+        "--eval_iters=2",
+        "--log_interval=10",
+        "--block_size=128",
+        "--batch_size=12",
+        "--n_layer=8",
+        "--n_head=4",
+        "--n_embd=128",
+        "--max_iters=2000",
+        "--lr_decay_iters=2000",
+        "--dropout=0.0",
+        "--model_type=GPT"
+    ],
+    "state": "running",
+    "program": "C:\\Users\\DELL\\Desktop\\PersonalNanoGPTProject\\train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/bkarab03/PersonalNanoGPTProject.git",
+        "commit": "6a1eb2a451a00fac44c994d04f8cafb3a77985f4"
+    },
+    "email": "berkkarabacak@gmail.com",
+    "root": "C:/Users/DELL/Desktop/PersonalNanoGPTProject",
+    "host": "DESKTOP-US67S5G",
+    "username": "DELL",
+    "executable": "C:\\Users\\DELL\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "cpu_count": 6,
+    "cpu_count_logical": 12,
+    "cpu_freq": {
+        "current": 2592.0,
+        "min": 0.0,
+        "max": 2592.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2592.0,
+            "min": 0.0,
+            "max": 2592.0
+        }
+    ],
+    "disk": {
+        "total": 953.1738243103027,
+        "used": 200.6008071899414
+    },
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce GTX 1650",
+            "memory_total": 4294967296
+        }
+    ],
+    "memory": {
+        "total": 15.733585357666016
+    }
+}

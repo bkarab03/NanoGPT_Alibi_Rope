@@ -13,5 +13,7 @@ def create_attention(config):
         return MultiScaleRetention(config)
     elif attention_type == 'memory':
         return Memory(config)
+    elif attention_type == 'hkproj':
+        return Memory(config)
     else:
         raise ValueError(f"Unknown attention type: {attention_type}")

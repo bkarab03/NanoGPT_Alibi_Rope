@@ -12,14 +12,11 @@ class SelfAttention(Attention):
     def __init__(self, config):
         super().__init__(config)
         self.config = config
+        self.cache_k = None
+        self.cache_v = None
 
     def forward(self, x):
         q, k, v, B, T, C = super().forward(x)
-
-        # B: Batch size (number of samples processed together)
-        # nh: Number of attention heads (sub-models focusing on different parts of the input)
-        # T: Sequence length (number of items in each sequence)
-        # hs: Head size (dimensionality of each attention head)
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         if self.flash:

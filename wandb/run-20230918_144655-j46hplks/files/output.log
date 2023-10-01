@@ -1,0 +1,65 @@
+loading weights from pretrained gpt: gpt2-medium
+forcing vocab_size=50257, block_size=1024, bias=True
+overriding dropout rate to 0.0
+number of parameters: 353.77M
+What is your name
+What is the name of your business?
+Name of your business or company
+What is the number of your business? (optional)
+Please fill in the form using the text below.
+Please provide the name of your business or your company
+Please provide the address of your business
+Please provide the name of your address
+Please provide the name of your property address
+Please provide the name of the city and state of your business
+Please provide an address to which your business qualifies
+Please provide a link to the current best practices and policies about the Internet
+Please provide a current link to the current best practices and policies about the Internet
+Please provide your email address
+Please provide a link to the current best practices and policies about the Internet
+Please provide the name and email of a trade association that you represent, if any
+Please provide the name and email of a trade association that you represent, if any
+Please provide a link to the current best practices and policies about the Internet
+Please provide a link to the current best practices and policies about the Internet
+Please provide the name and email of the number of your business or your company
+Please provide a link to the current best practices and policies about the Internet
+Please provide the name and email of a trade association that you represent if any
+Please provide a link to the current best practices and policies about the Internet
+Please provide a link to the current best practices and policies about the Internet
+Please provide a link to the current best practices and policies about the Internet
+Please provide the name and email of a trade association that you represent if any
+Please provide a link to the current best practices and policies about the Internet
+Please provide a link to the current best practices and policies about the Internet
+Please provide the name and email of a trade association that you represent if any
+Please provide a link to the current best practices and policies about the Internet
+Please provide a link to the current best practices and policies about the Internet
+Please provide the name and email of a trade association that you represent if any
+Please provide a link to the current best practices and policies about the Internet
+Please provide a link to the current best practices and policies about the Internet
+Please provide the name and email of a trade association that you represent if any
+Please provide a link to
+---------------
+loading weights from pretrained gpt: gpt2
+forcing vocab_size=50257, block_size=1024, bias=True
+overriding dropout rate to 0.0
+number of parameters: 123.65M
+What is your name
+Will you buy more?
+The prices on this survey rose slightly to $1,532.46, which was up from $1,488.64, or $1,487.60, which was up from $1,424.25, or $1,422.33. Both surveys show that people have, on average, one college degree, and the gap between the numbers just doesn't grow.
+This survey is to help us understand the median household income and what factors are driving the gap in median household income between people now owning at least a high school education and those who are.
+It is also meant to help us judge how things are changing and how they could be fixed. If you are one of those people, it seems that the median household income is about $68,400, so your household income is about $43,700 less than it was in 1982.
+The question asked is "What are the most common economic conditions for a family of four living in this state?
+Answer:
+1. Poverty Relief
+2. School Choice
+3. Legal Assistance
+4. Child and Family Planning
+5. Social Security
+If you are a family of four and live in this state, you need to report your education, hours of work and household income.
+If you do not, you will be unable to visit the D.C. Children's Hospital because the hospital is closed.
+If you have an older sibling or daughter living in the D.C. area who are the caretakers of a family of four, you may need to visit the D.C. Children's Hospital.
+If you are a current caretaker, you may need to visit the Children's Hospital in Washington, D.C. The hospital is open until midnight.
+If you already live in D.C., visit the Children's Hospital in Washington, D.C., which has the Children's Hospital of D.C. until 3 p.m. Friday when there is no service.
+If you have an older sibling or daughter living in the D.C. area, you may need to visit the Children's Hospital in Washington, D.C., which has the Children's Hospital of D.C. until 9 p.m.
+If you have a current caretaker, you may need to visit the Children's Hospital in Washington,
+---------------

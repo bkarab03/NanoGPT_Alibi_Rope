@@ -32,7 +32,15 @@ class Attention(nn.Module):
     def forward(self, x):
 
         B, T, C = x.size()
+        # B = Batch Size, T = Time (sequence length), C = Channel (embedding size)
+
         q, k, v = self.c_attn(x).split(self.config.n_embd, dim=2)
+
+        # Reshape and transpose the Query (Q), Key (K), and Value (V) tensors to prepare for multi-head attention.
+        # The tensors are reshaped into a 4D tensor with dimensions [Batch, Time- sequence length, Heads, Embedding_Size // Heads],
+        # and then transposed to bring the "Heads" dimension before the "Time" dimension. This rearrangement is
+        # necessary for performing the multi-head attention calculations that follow.
+
         k = k.view(B, T, self.config.n_head, C // self.config.n_head).transpose(1, 2)
         q = q.view(B, T, self.config.n_head, C // self.config.n_head).transpose(1, 2)
         v = v.view(B, T, self.config.n_head, C // self.config.n_head).transpose(1, 2)

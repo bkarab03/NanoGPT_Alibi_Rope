@@ -1,0 +1,279 @@
+2023-09-10 12:36:10,677 INFO    StreamThr :1404 [internal.py:wandb_internal():86] W&B internal server running at pid: 1404, started at: 2023-09-10 12:36:10.676672
+2023-09-10 12:36:10,679 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status
+2023-09-10 12:36:10,692 INFO    WriterThread:1404 [datastore.py:open_for_write():85] open: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\run-355xuz56.wandb
+2023-09-10 12:36:10,693 DEBUG   SenderThread:1404 [sender.py:send():379] send: header
+2023-09-10 12:36:10,744 DEBUG   SenderThread:1404 [sender.py:send():379] send: run
+2023-09-10 12:36:11,674 INFO    SenderThread:1404 [dir_watcher.py:__init__():211] watching files in: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files
+2023-09-10 12:36:11,676 INFO    SenderThread:1404 [sender.py:_start_run_threads():1121] run started: 355xuz56 with start time 1694338570.679667
+2023-09-10 12:36:11,676 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: summary_record
+2023-09-10 12:36:11,677 INFO    SenderThread:1404 [sender.py:_save_file():1375] saving file wandb-summary.json with policy end
+2023-09-10 12:36:11,686 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: check_version
+2023-09-10 12:36:11,687 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: check_version
+2023-09-10 12:36:12,075 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: run_start
+2023-09-10 12:36:12,122 DEBUG   HandlerThread:1404 [system_info.py:__init__():31] System info init
+2023-09-10 12:36:12,122 DEBUG   HandlerThread:1404 [system_info.py:__init__():46] System info init done
+2023-09-10 12:36:12,122 INFO    HandlerThread:1404 [system_monitor.py:start():181] Starting system monitor
+2023-09-10 12:36:12,123 INFO    SystemMonitor:1404 [system_monitor.py:_start():145] Starting system asset monitoring threads
+2023-09-10 12:36:12,123 INFO    HandlerThread:1404 [system_monitor.py:probe():201] Collecting system info
+2023-09-10 12:36:12,127 INFO    SystemMonitor:1404 [interfaces.py:start():190] Started cpu monitoring
+2023-09-10 12:36:12,128 INFO    SystemMonitor:1404 [interfaces.py:start():190] Started disk monitoring
+2023-09-10 12:36:12,128 INFO    SystemMonitor:1404 [interfaces.py:start():190] Started gpu monitoring
+2023-09-10 12:36:12,133 INFO    SystemMonitor:1404 [interfaces.py:start():190] Started memory monitoring
+2023-09-10 12:36:12,149 INFO    SystemMonitor:1404 [interfaces.py:start():190] Started network monitoring
+2023-09-10 12:36:12,156 DEBUG   HandlerThread:1404 [system_info.py:probe():195] Probing system
+2023-09-10 12:36:12,158 DEBUG   HandlerThread:1404 [system_info.py:_probe_git():180] Probing git
+2023-09-10 12:36:12,264 DEBUG   HandlerThread:1404 [system_info.py:_probe_git():188] Probing git done
+2023-09-10 12:36:12,264 DEBUG   HandlerThread:1404 [system_info.py:probe():240] Probing system done
+2023-09-10 12:36:12,264 DEBUG   HandlerThread:1404 [system_monitor.py:probe():210] {'os': 'Windows-10-10.0.22621-SP0', 'python': '3.11.4', 'heartbeatAt': '2023-09-10T09:36:12.156691', 'startedAt': '2023-09-10T09:36:10.659581', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': 'C:\\Users\\DELL\\Desktop\\PersonalNanoGPTProject\\sample.py', 'codePath': 'sample.py', 'git': {'remote': 'https://github.com/bkarab03/PersonalNanoGPTProject.git', 'commit': '25c962c2f2316d4fb2aa629a5f0c175ecc34cd42'}, 'email': 'berkkarabacak@gmail.com', 'root': 'C:/Users/DELL/Desktop/PersonalNanoGPTProject', 'host': 'DESKTOP-US67S5G', 'username': 'DELL', 'executable': 'C:\\Users\\DELL\\AppData\\Local\\Programs\\Python\\Python311\\python.exe', 'cpu_count': 6, 'cpu_count_logical': 12, 'cpu_freq': {'current': 2592.0, 'min': 0.0, 'max': 2592.0}, 'cpu_freq_per_core': [{'current': 2592.0, 'min': 0.0, 'max': 2592.0}], 'disk': {'total': 953.1738243103027, 'used': 198.78052520751953}, 'gpu': 'NVIDIA GeForce GTX 1650', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce GTX 1650', 'memory_total': 4294967296}], 'memory': {'total': 15.733585357666016}}
+2023-09-10 12:36:12,264 INFO    HandlerThread:1404 [system_monitor.py:probe():211] Finished collecting system info
+2023-09-10 12:36:12,264 INFO    HandlerThread:1404 [system_monitor.py:probe():214] Publishing system info
+2023-09-10 12:36:12,264 DEBUG   HandlerThread:1404 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-09-10 12:36:12,265 DEBUG   HandlerThread:1404 [system_info.py:_save_pip():67] Saving pip packages done
+2023-09-10 12:36:12,266 INFO    HandlerThread:1404 [system_monitor.py:probe():216] Finished publishing system info
+2023-09-10 12:36:12,275 DEBUG   SenderThread:1404 [sender.py:send():379] send: files
+2023-09-10 12:36:12,275 INFO    SenderThread:1404 [sender.py:_save_file():1375] saving file wandb-metadata.json with policy now
+2023-09-10 12:36:12,282 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:36:12,282 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:36:12,558 DEBUG   SenderThread:1404 [sender.py:send():379] send: telemetry
+2023-09-10 12:36:12,558 DEBUG   SenderThread:1404 [sender.py:send():379] send: telemetry
+2023-09-10 12:36:12,558 DEBUG   SenderThread:1404 [sender.py:send():379] send: telemetry
+2023-09-10 12:36:12,681 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\requirements.txt
+2023-09-10 12:36:12,681 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\wandb-summary.json
+2023-09-10 12:36:12,681 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\wandb-metadata.json
+2023-09-10 12:36:13,527 INFO    wandb-upload_0:1404 [upload_job.py:push():131] Uploaded file C:\Users\DELL\AppData\Local\Temp\tmprqko3878wandb\e6mfjutd-wandb-metadata.json
+2023-09-10 12:36:13,694 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\output.log
+2023-09-10 12:36:15,716 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\output.log
+2023-09-10 12:36:15,808 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:36:21,061 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:36:21,772 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\output.log
+2023-09-10 12:36:26,100 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:36:27,281 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:36:27,281 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:36:31,574 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:36:36,611 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:36:41,680 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:36:42,280 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:36:42,280 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:36:42,950 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\config.yaml
+2023-09-10 12:36:47,759 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:36:52,807 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:36:57,286 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:36:57,287 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:36:58,078 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:03,126 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:08,170 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:12,154 DEBUG   SystemMonitor:1404 [system_monitor.py:_start():159] Starting system metrics aggregation loop
+2023-09-10 12:37:12,155 DEBUG   SenderThread:1404 [sender.py:send():379] send: stats
+2023-09-10 12:37:12,296 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:37:12,296 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:37:13,794 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:18,840 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:23,877 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:27,305 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:37:27,306 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:37:29,704 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:34,760 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:39,805 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:42,164 DEBUG   SenderThread:1404 [sender.py:send():379] send: stats
+2023-09-10 12:37:42,302 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:37:42,302 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:37:45,671 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:50,730 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:55,784 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:37:57,311 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:37:57,311 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:38:00,864 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:05,914 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:10,971 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:12,174 DEBUG   SenderThread:1404 [sender.py:send():379] send: stats
+2023-09-10 12:38:12,309 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:38:12,310 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:38:16,916 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:21,952 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:27,002 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:27,317 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:38:27,317 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:38:32,639 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:37,668 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:42,189 DEBUG   SenderThread:1404 [sender.py:send():379] send: stats
+2023-09-10 12:38:42,318 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:38:42,319 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:38:43,657 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:48,685 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:53,726 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:38:57,317 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:38:57,317 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:38:59,639 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:04,683 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:09,726 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:12,220 DEBUG   SenderThread:1404 [sender.py:send():379] send: stats
+2023-09-10 12:39:12,323 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:39:12,323 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:39:15,685 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:20,734 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:25,789 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:27,341 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:39:27,341 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:39:31,693 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:36,759 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:41,807 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:42,209 DEBUG   SenderThread:1404 [sender.py:send():379] send: stats
+2023-09-10 12:39:42,349 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:39:42,349 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:39:47,707 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:52,744 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:39:57,341 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:39:57,342 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:39:57,747 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:40:02,804 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:40:07,835 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:40:12,213 DEBUG   SenderThread:1404 [sender.py:send():379] send: stats
+2023-09-10 12:40:12,354 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:40:12,354 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:40:13,620 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:40:18,667 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:40:23,701 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:40:27,364 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: stop_status
+2023-09-10 12:40:27,364 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: stop_status
+2023-09-10 12:40:28,227 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: partial_history
+2023-09-10 12:40:28,228 DEBUG   SenderThread:1404 [sender.py:send():379] send: history
+2023-09-10 12:40:28,228 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: summary_record
+2023-09-10 12:40:28,229 INFO    SenderThread:1404 [sender.py:_save_file():1375] saving file wandb-summary.json with policy end
+2023-09-10 12:40:28,232 DEBUG   SenderThread:1404 [sender.py:send():379] send: exit
+2023-09-10 12:40:28,232 INFO    SenderThread:1404 [sender.py:send_exit():584] handling exit code: 0
+2023-09-10 12:40:28,232 INFO    SenderThread:1404 [sender.py:send_exit():586] handling runtime: 256
+2023-09-10 12:40:28,232 INFO    SenderThread:1404 [sender.py:_save_file():1375] saving file wandb-summary.json with policy end
+2023-09-10 12:40:28,233 INFO    SenderThread:1404 [sender.py:send_exit():592] send defer
+2023-09-10 12:40:28,233 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,233 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 0
+2023-09-10 12:40:28,233 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,233 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 0
+2023-09-10 12:40:28,234 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 1
+2023-09-10 12:40:28,234 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,234 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 1
+2023-09-10 12:40:28,234 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,234 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 1
+2023-09-10 12:40:28,234 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 2
+2023-09-10 12:40:28,234 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,234 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 2
+2023-09-10 12:40:28,234 INFO    HandlerThread:1404 [system_monitor.py:finish():190] Stopping system monitor
+2023-09-10 12:40:28,235 DEBUG   SystemMonitor:1404 [system_monitor.py:_start():166] Finished system metrics aggregation loop
+2023-09-10 12:40:28,235 DEBUG   SystemMonitor:1404 [system_monitor.py:_start():170] Publishing last batch of metrics
+2023-09-10 12:40:28,235 INFO    HandlerThread:1404 [interfaces.py:finish():202] Joined cpu monitor
+2023-09-10 12:40:28,235 INFO    HandlerThread:1404 [interfaces.py:finish():202] Joined disk monitor
+2023-09-10 12:40:28,278 INFO    HandlerThread:1404 [interfaces.py:finish():202] Joined gpu monitor
+2023-09-10 12:40:28,279 INFO    HandlerThread:1404 [interfaces.py:finish():202] Joined memory monitor
+2023-09-10 12:40:28,279 INFO    HandlerThread:1404 [interfaces.py:finish():202] Joined network monitor
+2023-09-10 12:40:28,279 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,279 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 2
+2023-09-10 12:40:28,279 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 3
+2023-09-10 12:40:28,279 DEBUG   SenderThread:1404 [sender.py:send():379] send: stats
+2023-09-10 12:40:28,280 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,280 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 3
+2023-09-10 12:40:28,280 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,280 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 3
+2023-09-10 12:40:28,280 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 4
+2023-09-10 12:40:28,281 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,281 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 4
+2023-09-10 12:40:28,281 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,281 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 4
+2023-09-10 12:40:28,281 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 5
+2023-09-10 12:40:28,281 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,281 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 5
+2023-09-10 12:40:28,282 DEBUG   SenderThread:1404 [sender.py:send():379] send: summary
+2023-09-10 12:40:28,283 INFO    SenderThread:1404 [sender.py:_save_file():1375] saving file wandb-summary.json with policy end
+2023-09-10 12:40:28,283 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,283 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 5
+2023-09-10 12:40:28,283 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 6
+2023-09-10 12:40:28,284 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,284 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 6
+2023-09-10 12:40:28,284 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,284 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 6
+2023-09-10 12:40:28,284 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 7
+2023-09-10 12:40:28,284 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:40:28,284 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,285 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 7
+2023-09-10 12:40:28,285 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,285 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 7
+2023-09-10 12:40:28,842 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 8
+2023-09-10 12:40:28,842 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,843 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 8
+2023-09-10 12:40:28,843 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:28,843 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 8
+2023-09-10 12:40:28,843 INFO    SenderThread:1404 [job_builder.py:build():281] Attempting to build job artifact
+2023-09-10 12:40:28,843 INFO    SenderThread:1404 [job_builder.py:_get_source_type():400] is repo sourced job
+2023-09-10 12:40:28,848 INFO    SenderThread:1404 [job_builder.py:build():374] adding wandb-job metadata file
+2023-09-10 12:40:28,861 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 9
+2023-09-10 12:40:28,861 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:28,861 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 9
+2023-09-10 12:40:28,861 DEBUG   SenderThread:1404 [sender.py:send():379] send: artifact
+2023-09-10 12:40:29,036 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\wandb-summary.json
+2023-09-10 12:40:29,036 INFO    Thread-16 :1404 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\output.log
+2023-09-10 12:40:29,287 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: poll_exit
+2023-09-10 12:40:30,606 INFO    wandb-upload_0:1404 [upload_job.py:push():89] Uploaded file C:\Users\DELL\AppData\Local\wandb\wandb\artifacts\staging\tmpd0i127we
+2023-09-10 12:40:30,609 INFO    wandb-upload_1:1404 [upload_job.py:push():89] Uploaded file C:\Users\DELL\AppData\Local\wandb\wandb\artifacts\staging\tmp3140sgg4
+2023-09-10 12:40:32,266 INFO    SenderThread:1404 [sender.py:send_artifact():1475] sent artifact job-https___github.com_bkarab03_PersonalNanoGPTProject.git_sample.py - {'id': 'QXJ0aWZhY3Q6NTYzODYyMTA3', 'digest': '63ed038f1f76ff5075484aa2a6b7980b', 'state': 'PENDING', 'aliases': [], 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjk2MzEzMjY0', 'latestArtifact': None}, 'version': 'latest'}
+2023-09-10 12:40:32,266 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:32,266 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 9
+2023-09-10 12:40:32,266 INFO    SenderThread:1404 [dir_watcher.py:finish():358] shutting down directory watcher
+2023-09-10 12:40:33,077 INFO    SenderThread:1404 [dir_watcher.py:finish():388] scan: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files
+2023-09-10 12:40:33,078 INFO    SenderThread:1404 [dir_watcher.py:finish():402] scan save: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\config.yaml config.yaml
+2023-09-10 12:40:33,079 INFO    SenderThread:1404 [dir_watcher.py:finish():402] scan save: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\output.log output.log
+2023-09-10 12:40:33,085 INFO    SenderThread:1404 [dir_watcher.py:finish():402] scan save: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\requirements.txt requirements.txt
+2023-09-10 12:40:33,092 INFO    SenderThread:1404 [dir_watcher.py:finish():402] scan save: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\wandb-metadata.json wandb-metadata.json
+2023-09-10 12:40:33,092 INFO    SenderThread:1404 [dir_watcher.py:finish():402] scan save: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\wandb-summary.json wandb-summary.json
+2023-09-10 12:40:33,101 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 10
+2023-09-10 12:40:33,102 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: poll_exit
+2023-09-10 12:40:33,104 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:33,104 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 10
+2023-09-10 12:40:33,105 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:33,105 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 10
+2023-09-10 12:40:33,106 INFO    SenderThread:1404 [file_pusher.py:finish():159] shutting down file pusher
+2023-09-10 12:40:33,602 INFO    wandb-upload_0:1404 [upload_job.py:push():131] Uploaded file C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\config.yaml
+2023-09-10 12:40:33,820 INFO    wandb-upload_2:1404 [upload_job.py:push():131] Uploaded file C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\requirements.txt
+2023-09-10 12:40:33,948 INFO    wandb-upload_3:1404 [upload_job.py:push():131] Uploaded file C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\wandb-summary.json
+2023-09-10 12:40:33,991 INFO    wandb-upload_1:1404 [upload_job.py:push():131] Uploaded file C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\files\output.log
+2023-09-10 12:40:34,114 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: status_report
+2023-09-10 12:40:34,207 INFO    Thread-15 (_thread_body):1404 [sender.py:transition_state():612] send defer: 11
+2023-09-10 12:40:34,207 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:34,207 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 11
+2023-09-10 12:40:34,207 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:34,208 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 11
+2023-09-10 12:40:34,208 INFO    SenderThread:1404 [file_pusher.py:join():164] waiting for file pusher
+2023-09-10 12:40:34,208 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 12
+2023-09-10 12:40:34,208 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:34,208 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 12
+2023-09-10 12:40:34,208 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:34,208 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 12
+2023-09-10 12:40:34,208 INFO    SenderThread:1404 [file_stream.py:finish():593] file stream finish called
+2023-09-10 12:40:34,332 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: keepalive
+2023-09-10 12:40:34,963 INFO    SenderThread:1404 [file_stream.py:finish():597] file stream finish is done
+2023-09-10 12:40:34,964 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 13
+2023-09-10 12:40:34,964 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:34,964 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 13
+2023-09-10 12:40:34,964 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:34,964 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 13
+2023-09-10 12:40:34,964 INFO    SenderThread:1404 [sender.py:transition_state():612] send defer: 14
+2023-09-10 12:40:34,964 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: defer
+2023-09-10 12:40:34,964 INFO    HandlerThread:1404 [handler.py:handle_request_defer():170] handle defer: 14
+2023-09-10 12:40:34,965 DEBUG   SenderThread:1404 [sender.py:send():379] send: final
+2023-09-10 12:40:34,965 DEBUG   SenderThread:1404 [sender.py:send():379] send: footer
+2023-09-10 12:40:34,965 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: defer
+2023-09-10 12:40:34,965 INFO    SenderThread:1404 [sender.py:send_request_defer():608] handle sender defer: 14
+2023-09-10 12:40:34,965 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: poll_exit
+2023-09-10 12:40:34,965 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: server_info
+2023-09-10 12:40:34,965 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: get_summary
+2023-09-10 12:40:34,966 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: sampled_history
+2023-09-10 12:40:34,966 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: job_info
+2023-09-10 12:40:34,966 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: poll_exit
+2023-09-10 12:40:34,967 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: server_info
+2023-09-10 12:40:35,176 DEBUG   SenderThread:1404 [sender.py:send_request():406] send_request: job_info
+2023-09-10 12:40:35,177 INFO    MainThread:1404 [wandb_run.py:_footer_history_summary_info():3481] rendering history
+2023-09-10 12:40:35,177 INFO    MainThread:1404 [wandb_run.py:_footer_history_summary_info():3513] rendering summary
+2023-09-10 12:40:35,177 INFO    MainThread:1404 [wandb_run.py:_footer_sync_info():3440] logging synced files
+2023-09-10 12:40:35,177 DEBUG   HandlerThread:1404 [handler.py:handle_request():144] handle_request: shutdown
+2023-09-10 12:40:35,179 INFO    HandlerThread:1404 [handler.py:finish():857] shutting down handler
+2023-09-10 12:40:35,979 INFO    WriterThread:1404 [datastore.py:close():294] close: C:\Users\DELL\Desktop\PersonalNanoGPTProject\wandb\run-20230910_123610-355xuz56\run-355xuz56.wandb
+2023-09-10 12:40:36,184 INFO    SenderThread:1404 [sender.py:finish():1552] shutting down sender
+2023-09-10 12:40:36,184 INFO    SenderThread:1404 [file_pusher.py:finish():159] shutting down file pusher
+2023-09-10 12:40:36,184 INFO    SenderThread:1404 [file_pusher.py:join():164] waiting for file pusher
