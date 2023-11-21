@@ -433,7 +433,8 @@ with open(loss_filename, 'w') as f:
 
 pr.disable()
 pr.dump_stats('training_loop_stats.prof')
-wandb.finish()
+if wandb_log and master_process:
+    wandb.finish()
 
 if ddp:
     destroy_process_group()
