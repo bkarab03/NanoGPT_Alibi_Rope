@@ -75,7 +75,7 @@ class ModelConfig:
     n_embd: int = 768
     dropout: float = 0.0
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
-    pos_enc_type: str = "learned"
+    pos_enc_type: str = "sinusoidal"
     attention_type: str = "causal"
     disable_attn: bool = False
     model_type: str = "GPT"
@@ -143,7 +143,7 @@ class TransformerModel(nn.Module):
         pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
 
         # forward the GPT model itself
-        x = self._compute_embeddings(device, idx, pos)
+        x = self.get_embeddings_with_dropout(device, idx, pos)
 
         for block in self.transformer.h:
             x = block(x)
@@ -177,20 +177,27 @@ class TransformerModel(nn.Module):
 
         return logits, loss
 
-    def _compute_embeddings(self, device, idx, pos):
+    def get_embeddings_with_dropout(self, device, idx, pos):
         tok_emb = self.transformer.wte(idx)  # token embeddings of shape (b, t, n_embd)
+
         if self.pos_enc_type in ["alibi", "rope"]:
-            # No need to add positional embeddings here handled in attention
             x = self.transformer.drop(tok_emb)
         elif self.pos_enc_type == "sinusoidal":
             # Compute sinusoidal position embeddings
-            pos_emb = sinusoidal_positional_encoding(pos, self.config.n_embd,device)
+            pos_emb = sinusoidal_positional_encoding(pos, self.config.n_embd, device)
             x = self.transformer.drop(tok_emb + pos_emb)
-        else:
+        elif self.pos_enc_type == "learned":
             # Learned positional embeddings
             pos_emb = self.transformer.wpe(pos)  # Traditional position embeddings of shape (t, n_embd)
             x = self.transformer.drop(tok_emb + pos_emb)
+        elif self.pos_enc_type == "none" or self.pos_enc_type == "no_pos_emb":
+            # No positional embeddings are added
+            x = self.transformer.drop(tok_emb)
+        else:
+            raise ValueError("Unknown positional encoding type")
+
         return x
+
 
     def crop_block_size(self, block_size):
         # model surgery to decrease the block size if necessary

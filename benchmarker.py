@@ -61,9 +61,9 @@ def update_parameters_and_train():
 
     # Update the training commands with the new parameters
     training_commands = [
-        f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters={max_iters} --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal",
-        f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters={max_iters} --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal --pos_enc_type=alibi"
-        # f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters={max_iters} --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal --pos_enc_type=rope"        # Add more commands as needed
+        f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters={max_iters} --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal --pos_enc_type=none",
+        f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters={max_iters} --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal --pos_enc_type=alibi",
+        f"python train.py config/train_shakespeare_char.py --compile=False --block_size={block_size} --batch_size=12 --n_layer=6 --n_head=4 --n_embd={n_embd} --max_iters={max_iters} --lr_decay_iters=2000 --dropout=0.0 --eval_iters=2 --init_from=scratch --eval_interval=1000 --model_type={model_type} --max_time_minutes={time_min} --attention_type=causal --pos_enc_type=learned"        # Add more commands as needed
     ]
 
     # Now we can run the training commands
